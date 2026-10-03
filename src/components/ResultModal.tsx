@@ -275,6 +275,7 @@ export const ResultModal: React.FC<ResultModalProps> = ({
                       {...flaskFromMissionState(finalState)}
                       onUpdate={() => {}}
                       readOnly={true}
+                      showMassAndDensity={mission.unitId === 'comprehensive'}
                     />
                   )}
                 </>

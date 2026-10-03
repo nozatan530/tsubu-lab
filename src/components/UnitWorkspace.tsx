@@ -110,7 +110,7 @@ export const UnitWorkspace: React.FC<UnitWorkspaceProps> = ({
       icon: '🎯',
       themeColor: '#7c3aed',
       tagline: 'g ⇔ mol ⇔ 体積 ⇔ 濃度 をつなぐ実践問題',
-      terms: 'グラム換算 · 試薬調製 · モル濃度の計算',
+      terms: 'グラム換算 · 試薬調製 · モル濃度の計算 · 密度での換算',
     },
   };
 
@@ -284,6 +284,7 @@ export const UnitWorkspace: React.FC<UnitWorkspaceProps> = ({
                     packs={unit3State.packs}
                     waterML={unit3State.waterML}
                     onUpdate={(up) => setUnit3State((p) => ({ ...p, ...up }))}
+                    showMassAndDensity={unitId === 'comprehensive'}
                   />
                 )}
               </>

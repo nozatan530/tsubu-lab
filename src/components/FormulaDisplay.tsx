@@ -1,7 +1,7 @@
 import React from 'react';
 import { UnitId } from '../types';
 import { SUBSTANCES } from '../data/cards';
-import { calculateMassPercent, calculateMolesToQuantities, calculateMolarConcentration } from '../utils/chemistry';
+import { calculateMassPercent, calculateMolesToQuantities, calculateMolarConcentration, calculateSolutionMass } from '../utils/chemistry';
 
 interface FormulaDisplayProps {
   unitId: UnitId;
@@ -180,6 +180,12 @@ export const FormulaDisplay: React.FC<FormulaDisplayProps> = ({ unitId, state })
   const flaskWaterML = state.flaskWaterML ?? 900;
   const substanceId = state.flaskSubstanceId || state.substanceId || 'NaCl';
   const calc = calculateMolarConcentration(flaskPacks, flaskWaterML, substanceId);
+  const substance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
+  const massInfo = calculateSolutionMass(flaskPacks, flaskWaterML, substanceId);
+  // 密度を使った換算（1L あたりで考える）。現在の容器の値から計算するので、上のモル濃度と一致する
+  const massPer1L = 1000 * massInfo.densityGPerML;
+  const solutePer1L = massPer1L * (massInfo.massPercent / 100);
+  const molPer1L = solutePer1L / substance.molarMass;
 
   return (
     <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-6">
@@ -221,6 +227,22 @@ export const FormulaDisplay: React.FC<FormulaDisplayProps> = ({ unitId, state })
           体積 mL を 1000 で割って L（リットル）に直してから割ります（{calc.solutionVolumeML}mL ÷ 1000 ＝ {calc.solutionVolumeL.toFixed(3)}L）
         </div>
       </div>
+
+      {unitId === 'comprehensive' && calc.solutionVolumeML > 0 && (
+        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2">
+          <span className="text-xs font-semibold text-slate-700">
+            質量パーセント濃度（{massInfo.massPercent.toFixed(1)}%）→ モル濃度：密度（{massInfo.densityGPerML.toFixed(3)} g/mL）で「1Lは何gか」に直す
+          </span>
+          <ol className="text-xs sm:text-sm font-mono text-slate-800 space-y-1 list-none">
+            <li>① 溶液1Lの質量 ＝ 1000 mL × {massInfo.densityGPerML.toFixed(3)} g/mL ＝ <strong>{massPer1L.toFixed(1)} g</strong></li>
+            <li>② その中の溶質 ＝ {massPer1L.toFixed(1)} g × {(massInfo.massPercent / 100).toFixed(3)} ＝ <strong>{solutePer1L.toFixed(1)} g</strong></li>
+            <li>③ パック数 ＝ {solutePer1L.toFixed(1)} g ÷ {substance.molarMass} g/mol ＝ <strong className="text-purple-700">{molPer1L.toFixed(2)} mol</strong> → {molPer1L.toFixed(2)} mol/L</li>
+          </ol>
+          <p className="text-[11px] text-slate-500 leading-relaxed">
+            質量パーセント濃度は「質量（g）あたり」、モル濃度は「体積（L）あたり」。物差しが違うので、密度（溶液1mLあたりの質量）で体積を質量に直してからつなぎます。
+          </p>
+        </div>
+      )}
 
       <div className="p-3 bg-purple-50/70 border border-purple-200/80 rounded-xl text-xs text-purple-900 leading-relaxed">
         <strong>「モル濃度」という名前の言い換え：</strong>

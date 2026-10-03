@@ -126,6 +126,34 @@ export function calculateMolarConcentration(
   };
 }
 
+// 水の密度（g/mL）。説明を簡単にするため 1.00 とする
+export const WATER_DENSITY = 1.0;
+
+/**
+ * 溶液の質量・密度・質量パーセント濃度（モル濃度との換算用）
+ * 溶液の質量 ＝ 水の質量（水 mL × 1.00g/mL）＋ 溶質の質量（mol × モル質量）
+ * 密度 ＝ 溶液の質量(g) ÷ 溶液全体の体積(mL)
+ */
+export function calculateSolutionMass(packs: number, waterML: number, substanceId: string): {
+  soluteMassG: number;
+  solutionMassG: number;
+  densityGPerML: number; // g/mL（＝ g/cm³）
+  massPercent: number;
+} {
+  const substance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
+  const safePacks = Math.max(0, packs);
+  const soluteMassG = safePacks * substance.molarMass;
+  const solutionMassG = Math.max(0, waterML) * WATER_DENSITY + soluteMassG;
+  const volumeML = Math.max(0, waterML) + safePacks * substance.volumePerMolML;
+
+  return {
+    soluteMassG: roundTo(soluteMassG, 1),
+    solutionMassG: roundTo(solutionMassG, 1),
+    densityGPerML: volumeML > 0 ? solutionMassG / volumeML : 0,
+    massPercent: solutionMassG > 0 ? (soluteMassG / solutionMassG) * 100 : 0,
+  };
+}
+
 /**
  * Terminology glossaries with student-friendly equivalents
  */

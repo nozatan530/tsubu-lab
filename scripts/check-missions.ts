@@ -16,6 +16,7 @@ import {
   calculateMassPercent,
   calculateMolarConcentration,
   calculateMolesToQuantities,
+  calculateSolutionMass,
 } from '../src/utils/chemistry';
 import {
   BeakerState,
@@ -132,6 +133,7 @@ const SOLUTIONS: Record<string, Step[]> = {
   'u3-m4': [F.takeOut('half')],
   'u4-m1': [F.grams(2.9), F.mark(500)],
   'u4-m2': [F.grams(18), F.mark(200)],
+  'u4-m3': [F.grams(107), F.mark(1000)],
 };
 
 // 最初から達成になってよいミッション（操作して観察するだけのもの）
@@ -163,6 +165,11 @@ const MISTAKES: Record<string, { why: string; steps: Step[] }[]> = {
     { why: '溶質を入れずに標線500mL', steps: [F.mark(500)] },
   ],
   'u4-m2': [{ why: '18gを1Lにする（0.10mol/L）', steps: [F.grams(18), F.mark(1000)] }],
+  'u4-m3': [
+    { why: '密度を使わず1L＝1000gとして100g入れる（9.4%）', steps: [F.grams(100), F.mark(1000)] },
+    { why: '10%を「1Lに10g」と考える', steps: [F.grams(10), F.mark(1000)] },
+    { why: '水1Lに107gを溶かす（溶液が1Lを超える）', steps: [...repeat(10, F.water(100)), F.grams(107)] },
+  ],
 };
 
 // ======================================================================
@@ -303,6 +310,23 @@ test('容器から半分・100mLくみ出しても、モル濃度は変わらな
   for (const t of ['half', '100ml', 'half'] as const) {
     s = flaskTakeOut(s, t);
     near(calculateMolarConcentration(s.packs, s.waterML, s.substanceId).molarConcentration, before, 1e-9);
+  }
+});
+
+test('10%の食塩水（溶液1L）の密度は約1.07g/mL、モル濃度は約1.83mol/L（u4-m3）', () => {
+  const s = flaskAlignToMark(flaskAddGrams({ substanceId: 'NaCl', packs: 0, waterML: 0 }, 107), 1000);
+  const m = calculateSolutionMass(s.packs, s.waterML, s.substanceId);
+  near(m.densityGPerML, 1.07, 0.002);
+  near(m.massPercent, 10, 0.01);
+  near(calculateMolarConcentration(s.packs, s.waterML, s.substanceId).molarConcentration, 1.83, 0.005);
+});
+
+test('質量パーセント濃度 → 密度 → モル濃度の換算が、容器の値から直接求めたモル濃度と一致する', () => {
+  for (const id of Object.keys(SUBSTANCES)) {
+    const s = flaskAlignToMark(flaskAddGrams({ substanceId: id, packs: 0, waterML: 0 }, 30), 500);
+    const m = calculateSolutionMass(s.packs, s.waterML, id);
+    const viaDensity = (1000 * m.densityGPerML * (m.massPercent / 100)) / SUBSTANCES[id].molarMass;
+    near(viaDensity, calculateMolarConcentration(s.packs, s.waterML, id).molarConcentration, 1e-9);
   }
 });
 

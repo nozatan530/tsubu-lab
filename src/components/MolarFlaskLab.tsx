@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SUBSTANCES } from '../data/cards';
-import { calculateMolarConcentration } from '../utils/chemistry';
+import { calculateMolarConcentration, calculateSolutionMass } from '../utils/chemistry';
 import {
   FlaskState,
   FLASK_MAX_PACKS,
@@ -23,6 +23,7 @@ interface MolarFlaskLabProps {
     actionDescription?: string;
   }) => void;
   readOnly?: boolean;
+  showMassAndDensity?: boolean; // 単元④：溶液の質量・密度・質量パーセント濃度も表示する
 }
 
 // 容器の最大目盛りと、標線合わせができる目盛り
@@ -35,9 +36,11 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
   waterML,
   onUpdate,
   readOnly = false,
+  showMassAndDensity = false,
 }) => {
   const currentSubstance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
   const calc = calculateMolarConcentration(packs, waterML, substanceId);
+  const massInfo = calculateSolutionMass(packs, waterML, substanceId);
   const [selectedMark, setSelectedMark] = useState<number>(1000); // 100, 200, 500, or 1000 mL
   const [inputGrams, setInputGrams] = useState<string>('');
 
@@ -230,6 +233,36 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
             </span>
           </div>
         </div>
+
+        {/* 質量・密度（質量パーセント濃度とモル濃度をつなぐ） */}
+        {showMassAndDensity && (
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-slate-500">
+              <span className="font-semibold text-slate-700">⚖️ 質量で見ると（密度でモル濃度とつながる）</span>
+              <span className="text-[11px] text-slate-400">水 1mL ＝ 1g として計算</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2">
+                <span className="text-[11px] font-medium text-slate-600 block">溶液の質量</span>
+                <span className="text-lg font-bold font-mono text-slate-800 tabular-nums">{massInfo.solutionMassG}</span>
+                <span className="text-[11px] ml-0.5 text-slate-600">g</span>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2">
+                <span className="text-[11px] font-medium text-slate-600 block">密度</span>
+                <span className="text-lg font-bold font-mono text-slate-800 tabular-nums">{massInfo.densityGPerML.toFixed(3)}</span>
+                <span className="text-[11px] ml-0.5 text-slate-600">g/mL</span>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2">
+                <span className="text-[11px] font-medium text-slate-600 block">質量％濃度</span>
+                <span className="text-lg font-bold font-mono text-slate-800 tabular-nums">{massInfo.massPercent.toFixed(1)}</span>
+                <span className="text-[11px] ml-0.5 text-slate-600">%</span>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              溶質 {massInfo.soluteMassG}g ÷ 溶液 {massInfo.solutionMassG}g × 100 ＝ {massInfo.massPercent.toFixed(1)}%　／　密度 ＝ 溶液 {massInfo.solutionMassG}g ÷ {calc.solutionVolumeML}mL
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Control Deck */}

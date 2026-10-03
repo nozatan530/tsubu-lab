@@ -263,6 +263,7 @@ export const MissionView: React.FC<MissionViewProps> = ({
                   {...flaskFromMissionState(simState)}
                   onUpdate={handleUpdateSim}
                   readOnly={isControlsLocked}
+                  showMassAndDensity={mission.unitId === 'comprehensive'}
                 />
               )}
             </>

@@ -1,5 +1,5 @@
 import { Mission } from '../types';
-import { calculateMassPercent, calculateMolarConcentration, calculateMolesToQuantities } from '../utils/chemistry';
+import { calculateMassPercent, calculateMolarConcentration, calculateMolesToQuantities, calculateSolutionMass } from '../utils/chemistry';
 
 export const MISSIONS: Mission[] = [
   // ==========================================
@@ -810,6 +810,61 @@ export const MISSIONS: Mission[] = [
           ? `正解！ 18.0g ＝ 0.10mol。0.10mol ÷ 0.20L ＝ 0.50mol/L です！`
           : `現在: パック数 ${state.flaskPacks}mol / 溶液体積 ${calc.solutionVolumeML}mL / 濃度 ${calc.formattedConcentration}mol/L`,
         particleExplanation: '重さ(18g)からパック数(0.10mol)に換算し、それを溶液のリットル数(0.20L)で割ると、1Lあたりのパック数＝モル濃度(0.50mol/L)がスッキリ導けます。',
+      };
+    },
+  },
+  {
+    id: 'u4-m3',
+    unitId: 'comprehensive',
+    order: 3,
+    title: '10%の食塩水は何 mol/L？（密度でつなぐ）',
+    subtitle: '質量パーセント濃度とモル濃度を、密度を使ってつなごう',
+    question: '質量パーセント濃度 10% の食塩水があります（密度 1.07 g/cm³）。この食塩水のモル濃度はおよそ何 mol/L でしょう？（NaCl: 58.5g/mol）',
+    goalDescription: '溶液1L（1000mL）で考えよう。密度から1Lの質量を求め、その10%ぶんの食塩を重さ（g）で入れて標線1Lに合わせ、質量パーセント濃度が10%になるか確かめよう！',
+    targetMoves: 3,
+    initialState: {
+      flaskSubstanceId: 'NaCl',
+      flaskPacks: 0,
+      flaskWaterML: 0,
+    },
+    choices: [
+      {
+        id: 'c1',
+        label: '約 1.7 mol/L（1L ＝ 1000g として 100g ÷ 58.5）',
+        isCorrect: false,
+        explanation: '溶液1Lを 1000g としてしまっています。密度が 1.07g/cm³ なので、1L（1000cm³）は 1070g あり、食塩はその10%の 107g です。',
+      },
+      {
+        id: 'c2',
+        label: '約 1.8 mol/L（1L ＝ 1070g として 107g ÷ 58.5）',
+        isCorrect: true,
+        explanation: '大正解！溶液1Lの質量は 1000mL × 1.07g/mL ＝ 1070g。食塩はその10%で 107g、107 ÷ 58.5 ≒ 1.83mol なので約 1.8mol/L です。',
+      },
+      {
+        id: 'c3',
+        label: '約 0.17 mol/L（10g ÷ 58.5）',
+        isCorrect: false,
+        explanation: '10% は「溶液100gあたり食塩10g」です。溶液1L（1070g）あたりでは 107g になります。',
+      },
+    ],
+    checkCompletion: (state) => {
+      const calc = calculateMolarConcentration(state.flaskPacks, state.flaskWaterML, state.flaskSubstanceId);
+      const mass = calculateSolutionMass(state.flaskPacks, state.flaskWaterML, state.flaskSubstanceId);
+      // 溶液1L・質量パーセント濃度10%（食塩 約107g）になったら達成
+      const isOneLiter = Math.abs(calc.solutionVolumeML - 1000) < 5;
+      const isTenPercent = Math.abs(mass.massPercent - 10) < 0.15;
+      const isSuccess = isOneLiter && isTenPercent;
+      const percent = mass.massPercent.toFixed(1);
+      return {
+        isSuccess,
+        feedback: isSuccess
+          ? `完成！ 溶液1Lの質量は ${mass.solutionMassG}g（密度 ${mass.densityGPerML.toFixed(2)}g/mL）、そのうち食塩が ${mass.soluteMassG}g で ${percent}%。食塩は ${calc.packs}mol なので、モル濃度は約 ${calc.formattedConcentration}mol/L です！`
+          : !isOneLiter
+          ? `現在: 溶液 ${calc.solutionVolumeML}mL / 質量パーセント濃度 ${percent}%（食塩を重さで入れてから、標線1Lに合わせよう）`
+          : mass.massPercent < 10
+          ? `現在: 溶液1Lの質量 ${mass.solutionMassG}g のうち食塩 ${mass.soluteMassG}g で ${percent}%。10%に届きません。1Lの質量は 1000g ではなく、密度 1.07 を使うと何gかな？`
+          : `現在: 溶液1Lの質量 ${mass.solutionMassG}g のうち食塩 ${mass.soluteMassG}g で ${percent}%。食塩が多すぎます。リセットしてやり直そう`,
+        particleExplanation: '質量パーセント濃度は「質量（g）あたり」、モル濃度は「体積（L）あたり」の濃さです。物差しが違うので、密度（溶液1mLあたりの質量）で「1Lの溶液は何gか」に直してからつなぎます。① 1L ＝ 1000mL × 1.07g/mL ＝ 1070g ② 食塩 ＝ 1070g × 0.10 ＝ 107g ③ 107g ÷ 58.5g/mol ≒ 1.83mol → 約1.8mol/L。食塩が溶けると同じ1Lでも水より重くなる（密度が1より大きい）ことがポイントです。',
       };
     },
   },
