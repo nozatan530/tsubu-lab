@@ -92,7 +92,7 @@ export const MISSIONS: Mission[] = [
       return {
         isSuccess: true,
         feedback: `現在: 食塩 ${state.soluteG}g ÷ 溶液 ${calc.solutionG}g × 100 ＝ 10.0% です！`,
-        particleExplanation: '「100gの溶液の中に何粒あるか」を見るのがパーセント濃度。水90gの中に10粒が入ると、全体は100gになり、ちょうど10%です。',
+        particleExplanation: '「溶液100gの中に食塩が何gあるか」を見るのがパーセント濃度。水90gに食塩10g（●10個）が入ると、全体は100gになり、ちょうど10%です。',
       };
     },
   },
@@ -138,7 +138,7 @@ export const MISSIONS: Mission[] = [
         feedback: isMatch
           ? `目標達成！ 食塩 ${state.soluteG}g ＋ 水 ${state.waterG}g ＝ 溶液 ${calc.solutionG}g （${calc.formattedPercent}%）が完成しました！`
           : `現在: 溶液 ${calc.solutionG}g / 濃度 ${calc.formattedPercent}% （目標: 溶液 200g・濃度 5.0% = 食塩 10g + 水 190g）`,
-        particleExplanation: '100g中に5粒ある割合にするため、200gの溶液全体の中に10粒の食塩が散らばっています。',
+        particleExplanation: '溶液100gあたり食塩5g（●5個）の割合にするため、200gの溶液全体の中に食塩10g（●10個）が散らばっています。',
       };
     },
   },
@@ -190,7 +190,7 @@ export const MISSIONS: Mission[] = [
         feedback: isSuccess
           ? `混ぜ合わせ完了！ 食塩の合計は 30g、溶液の合計は 200g なので、30 ÷ 200 × 100 ＝ 15.0% になりました！`
           : '「2つのビーカーを混ぜる」ボタンを押して確かめてみましょう。',
-        particleExplanation: '食塩（10粒＋20粒＝30粒）と溶液全体（100g＋100g＝200g）の比率を考えると、30÷200＝0.15（15%）と自然にわかります。',
+        particleExplanation: '食塩（10g＋20g＝30g、●30個）と溶液全体（100g＋100g＝200g）の比率を考えると、30÷200＝0.15（15%）と自然にわかります。',
       };
     },
   },
@@ -212,13 +212,13 @@ export const MISSIONS: Mission[] = [
         id: 'c1',
         label: '液の重さが2倍になり、濃度は半分の 10% になる',
         isCorrect: true,
-        explanation: '大正解！食塩（粒）の数は10gのまま、溶液が50gから100gへ2倍に増えたので、混み具合は半分（10%）に薄まります。',
+        explanation: '大正解！食塩の量は10gのまま、溶液が50gから100gへ2倍に増えたので、混み具合は半分（10%）に薄まります。',
       },
       {
         id: 'c2',
-        label: '食塩の粒の数は変わらないので、20% のまま',
+        label: '食塩の量は変わらないので、20% のまま',
         isCorrect: false,
-        explanation: '「粒の数（量）」は変わりませんが、水が増えて空間が広がるため「割合（濃度）」は薄まります。',
+        explanation: '「食塩の量（●の数）」は変わりませんが、水が増えて空間が広がるため「割合（濃度）」は薄まります。',
       },
       {
         id: 'c3',
@@ -239,7 +239,7 @@ export const MISSIONS: Mission[] = [
         feedback: isSuccess
           ? `水が加わって溶液全体が ${calc.solutionG}g になり、10g ÷ ${calc.solutionG}g × 100 ＝ ${calc.formattedPercent}% に薄まりました！`
           : `現在: 溶液 ${calc.solutionG}g / 濃度 ${calc.formattedPercent}% （${hint}）`,
-        particleExplanation: '粒の数（10g）はそのままですが、水色の液面が上がって粒同士の間隔が広がり、混み具合が半分になりました。',
+        particleExplanation: '食塩の量（●10個＝10g）はそのままですが、水色の液面が上がって●同士の間隔が広がり、混み具合が半分になりました。',
       };
     },
   },

@@ -16,7 +16,7 @@ const UNITS = [
     id: 'unit1' as UnitId,
     num: '①',
     title: '質量パーセント濃度',
-    concept: '粒（1g）と液面の高さで「割合」を見る',
+    concept: '●（食塩1gぶん）と液面の高さで「割合」を見る',
     tagline: '分けても濃度は不変！分母は「水」ではなく「溶液全体」',
     color: 'from-orange-500 to-amber-500',
     borderColor: 'border-orange-200',

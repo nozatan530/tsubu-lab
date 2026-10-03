@@ -17,7 +17,7 @@ export const ScaleLegend: React.FC<ScaleLegendProps> = ({ unitId, className = ''
         <div className="flex items-center gap-2 font-sans text-[11px]">
           <span className="flex items-center gap-1">
             <span className="inline-block w-2.5 h-2.5 rounded-full bg-orange-500 shadow-xs"></span>
-            <span className="text-orange-200">1粒 ＝ 1g（溶質）</span>
+            <span className="text-orange-200">●1個 ＝ 食塩 1g ぶんの目印</span>
           </span>
           <span className="text-slate-500">|</span>
           <span className="flex items-center gap-1">

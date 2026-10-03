@@ -181,7 +181,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                 {/* Surface Meniscus highlight */}
                 <div className="absolute top-0 inset-x-0 h-2 bg-sky-200/50 blur-[1px]" />
 
-                {/* Orange Solute Particles (1粒 = 1g) */}
+                {/* Orange Solute Markers (●1個 = 食塩1g) */}
                 {particlesA.map((p) => (
                   <div
                     key={p.id}
@@ -190,7 +190,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                       left: `${p.xPct}%`,
                       top: `${p.yPct}%`,
                     }}
-                    title="溶質 1g"
+                    title="食塩 1g ぶんの目印"
                   />
                 ))}
 
@@ -250,7 +250,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                         left: `${p.xPct}%`,
                         top: `${p.yPct}%`,
                       }}
-                      title="溶質 1g"
+                      title="食塩 1g ぶんの目印"
                     />
                   ))}
                 </div>
@@ -269,6 +269,12 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
             </div>
           )}
         </div>
+
+        {/* 単元②の「1粒は軽すぎて測れない」と矛盾しないよう、●が何を表すかを明示する */}
+        <p className="relative z-10 mt-3 text-[11px] text-slate-400 text-center leading-relaxed">
+          ※ オレンジの●1個は<strong className="text-orange-300">「食塩 1g ぶん」の目印</strong>です。
+          本物の粒（Na⁺ と Cl⁻）は小さすぎて見えず、食塩 1g の中にも約 1×10²² 組も入っています。
+        </p>
 
         {/* Crowding insight banner when partitioned */}
         {hasSecond && (
@@ -341,7 +347,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {/* Add Solute */}
             <div className="flex flex-col gap-1">
-              <span className="text-[11px] font-medium text-orange-700">食塩を足す（粒）</span>
+              <span className="text-[11px] font-medium text-orange-700">食塩を足す（●）</span>
               <div className="flex gap-1">
                 <button
                   type="button"
