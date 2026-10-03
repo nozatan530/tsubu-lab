@@ -1,6 +1,6 @@
 {
-  "name": "つぶラボ - 粒と箱で学ぶ高校化学基礎",
-  "description": "高校化学基礎の質量パーセント濃度・物質量（モル）・モル濃度を、粒と箱の操作で直感的に体験・理解するシミュレーション学習アプリ",
+  "name": "つぶラボ - 粒とパックで学ぶ高校化学基礎",
+  "description": "高校化学基礎の質量パーセント濃度・物質量（モル）・モル濃度を、粒とパックの操作で直感的に体験・理解するシミュレーション学習アプリ",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

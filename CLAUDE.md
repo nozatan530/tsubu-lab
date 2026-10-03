@@ -46,7 +46,3 @@ Vite + React 19 + TypeScript + Tailwind CSS v4。アイコンは lucide-react、
 AI Studio Build で試作（通常ルート：AI機能なし）。保存は localStorage のみ、サーバーなしの静的アプリ。
 GitHub リポジトリは `nozatan530/tsubu-lab`。
 公開先：GitHub Pages（https://nozatan530.github.io/tsubu-lab/）。`main` に push（マージ）すると `.github/workflows/deploy-pages.yml` がチェック・ビルドして自動で公開する。`vite.config.ts` は `base: './'`（相対パス）なので、リポジトリ名が変わっても設定し直さなくてよい。
-
-AI Studio の雛形から残っている不要物（仕上げで整理する候補）：
-- `@google/genai` `express` `dotenv`（コードからは使っていない）
-- `.env.example` の `GEMINI_API_KEY` / `APP_URL`、`metadata.json` の `MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API`
