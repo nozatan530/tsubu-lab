@@ -1,0 +1,31 @@
+# プッシュとプルリクエストのたびに、型チェック・判定チェック・ビルドを自動で実行する
+name: チェック
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # package-lock.json をリポジトリに置いていないため npm ci ではなく npm install を使う
+      - name: 依存パッケージのインストール
+        run: npm install --no-audit --no-fund
+
+      - name: 型チェック（npm run lint）
+        run: npm run lint
+
+      - name: ミッションの判定と濃度計算のチェック（npm run check）
+        run: npm run check
+
+      - name: ビルド（npm run build）
+        run: npm run build
