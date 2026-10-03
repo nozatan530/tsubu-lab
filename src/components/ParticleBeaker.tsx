@@ -15,6 +15,26 @@ interface ParticleBeakerProps {
   readOnly?: boolean;
 }
 
+// ビーカーの目盛り（最大 300g）。液面の高さと同じ基準で位置を決める
+const BEAKER_MAX_G = 300;
+const liquidHeightPct = (solutionG: number) =>
+  solutionG <= 0 ? 6 : Math.min(100, Math.max(2, (solutionG / BEAKER_MAX_G) * 100));
+
+const BeakerTicks: React.FC = () => (
+  <div className="absolute inset-2 select-none pointer-events-none z-10">
+    {[50, 100, 150, 200, 250, 300].map((g) => (
+      <div
+        key={g}
+        className="absolute left-0 flex items-center gap-0.5 translate-y-1/2"
+        style={{ bottom: `${(g / BEAKER_MAX_G) * 100}%` }}
+      >
+        <div className="w-2 h-px bg-slate-400/70" />
+        <span className="text-[9px] font-mono text-slate-400">{g}g</span>
+      </div>
+    ))}
+  </div>
+);
+
 export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
   soluteG,
   waterG,
@@ -149,18 +169,13 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
               <div className="absolute top-0 -left-1 w-3 h-3 border-t-4 border-l-4 border-slate-400/40 rounded-tl-sm -rotate-45" />
 
               {/* Volume tick marks on beaker */}
-              <div className="absolute left-1 top-4 bottom-4 flex flex-col justify-between text-[9px] font-mono text-slate-500 select-none pointer-events-none">
-                <span>300g</span>
-                <span>200g</span>
-                <span>100g</span>
-                <span>50g</span>
-              </div>
+              <BeakerTicks />
 
               {/* Water Liquid Area */}
               <div
                 className="w-full bg-linear-to-b from-sky-400/70 to-sky-600/80 rounded-b-xl relative transition-all duration-300 ease-out overflow-hidden"
                 style={{
-                  height: `${Math.min(94, Math.max(6, (calcA.solutionG / 300) * 100))}%`,
+                  height: `${liquidHeightPct(calcA.solutionG)}%`,
                 }}
               >
                 {/* Surface Meniscus highlight */}
@@ -216,17 +231,12 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                 {isSameConcentration ? 'ビーカー B（くみ出した分）' : 'ビーカー B'}
               </span>
               <div className="relative w-44 h-56 sm:w-48 sm:h-60 bg-slate-900/60 rounded-b-2xl border-x-4 border-b-4 border-amber-400/40 shadow-inner flex flex-col justify-end p-2 overflow-hidden">
-                <div className="absolute left-1 top-4 bottom-4 flex flex-col justify-between text-[9px] font-mono text-slate-500 select-none pointer-events-none">
-                  <span>300g</span>
-                  <span>200g</span>
-                  <span>100g</span>
-                  <span>50g</span>
-                </div>
+                <BeakerTicks />
 
                 <div
                   className="w-full bg-linear-to-b from-sky-400/70 to-sky-600/80 rounded-b-xl relative transition-all duration-300 ease-out overflow-hidden"
                   style={{
-                    height: `${Math.min(94, Math.max(6, (calcB!.solutionG / 300) * 100))}%`,
+                    height: `${liquidHeightPct(calcB!.solutionG)}%`,
                   }}
                 >
                   <div className="absolute top-0 inset-x-0 h-2 bg-sky-200/50 blur-[1px]" />

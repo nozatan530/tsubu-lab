@@ -16,6 +16,10 @@ interface MolarFlaskLabProps {
   readOnly?: boolean;
 }
 
+// 容器の最大目盛りと、標線合わせができる目盛り
+const FLASK_MAX_ML = 1200;
+const FLASK_MARKS_ML = [100, 200, 500, 1000];
+
 export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
   substanceId,
   packs,
@@ -103,7 +107,8 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
   };
 
   // Percentage height for the flask (max 1200mL scale)
-  const fillPct = Math.min(96, Math.max(4, (calc.solutionVolumeML / 1200) * 100));
+  const fillPct =
+    calc.solutionVolumeML <= 0 ? 4 : Math.min(100, Math.max(1, (calc.solutionVolumeML / FLASK_MAX_ML) * 100));
 
   return (
     <div className="w-full flex flex-col gap-4">
@@ -131,26 +136,28 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
           {/* Measuring Flask Graphic */}
           <div className="relative w-52 sm:w-64 h-64 sm:h-72 flex flex-col items-center justify-end pb-3">
             {/* Flask Neck at top */}
-            <div className="w-16 h-20 border-x-4 border-slate-400/40 relative z-20 flex flex-col justify-end">
-              {/* 1L (1000mL) Mark on the neck */}
-              <div className="absolute top-6 -left-3 right-0 flex items-center">
-                <div className="w-5 h-[2px] bg-rose-500 shadow-xs"></div>
-                <span className="text-[10px] font-mono font-bold text-rose-400 ml-1">標線 1L (1000mL)</span>
-              </div>
-            </div>
+            <div className="w-16 h-20 border-x-4 border-slate-400/40 relative z-20" />
 
             {/* Flask Bulb / Body at bottom */}
             <div className="relative w-48 sm:w-56 h-48 sm:h-52 bg-slate-900/60 rounded-b-[40px] rounded-t-2xl border-x-4 border-b-4 border-slate-400/40 shadow-inner flex flex-col justify-end p-2 overflow-hidden">
-              {/* Other Calibration Marks (100mL, 500mL) */}
-              <div className="absolute left-2 inset-y-4 flex flex-col justify-between text-[9px] font-mono text-slate-400 select-none pointer-events-none z-30">
-                <div className="flex items-center gap-1" style={{ position: 'absolute', bottom: `${(500 / 1200) * 100}%` }}>
-                  <div className="w-4 h-[1.5px] bg-emerald-400/80"></div>
-                  <span className="text-emerald-300">500mL</span>
-                </div>
-                <div className="flex items-center gap-1" style={{ position: 'absolute', bottom: `${(100 / 1200) * 100}%` }}>
-                  <div className="w-3 h-[1.5px] bg-emerald-400/80"></div>
-                  <span className="text-emerald-300">100mL</span>
-                </div>
+              {/* Calibration Marks：液面と同じ基準（最大 1200mL）で位置を決める */}
+              <div className="absolute inset-2 select-none pointer-events-none z-30">
+                {FLASK_MARKS_ML.map((ml) => (
+                  <div
+                    key={ml}
+                    className="absolute left-0 right-0 flex items-center gap-1 translate-y-1/2"
+                    style={{ bottom: `${(ml / FLASK_MAX_ML) * 100}%` }}
+                  >
+                    <div className={ml === 1000 ? 'w-full h-[2px] bg-rose-500/80 absolute left-0' : 'w-3 h-[1.5px] bg-emerald-400/80'} />
+                    <span
+                      className={`relative text-[9px] font-mono font-bold px-0.5 rounded-xs bg-slate-950/50 ${
+                        ml === 1000 ? 'text-rose-300 ml-1' : 'text-emerald-300'
+                      }`}
+                    >
+                      {ml === 1000 ? '標線 1L' : `${ml}mL`}
+                    </span>
+                  </div>
+                ))}
               </div>
 
               {/* Liquid inside flask */}
