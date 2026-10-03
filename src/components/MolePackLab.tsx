@@ -415,9 +415,9 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                     placeholder="例: 36"
                     value={inputGrams}
                     onChange={(e) => setInputGrams(e.target.value)}
-                    className="w-full py-2 px-3 text-xs font-mono font-bold bg-white rounded-lg border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-slate-500"
+                    className="w-full py-2 px-3 text-base sm:text-xs font-mono font-bold bg-white rounded-lg border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-slate-500"
                   />
-                  <span className="absolute right-2.5 top-2 text-xs text-slate-400 font-sans pointer-events-none">
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-sans pointer-events-none">
                     g
                   </span>
                 </div>
