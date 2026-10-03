@@ -228,12 +228,16 @@ export const MISSIONS: Mission[] = [
     ],
     checkCompletion: (state) => {
       const calc = calculateMassPercent(state.soluteG, state.waterG);
-      const isSuccess = state.soluteG === 10 && state.waterG >= 90;
+      // 食塩10g・水90g（水を +50g 加えた状態）になったときだけ達成
+      const isSuccess = Math.abs(state.soluteG - 10) < 0.01 && Math.abs(state.waterG - 90) < 0.01;
+      const hint = state.waterG > 90
+        ? '水を入れすぎています。リセットして、水をちょうど +50g 加えてみよう'
+        : '水を +50g 加えてみよう';
       return {
         isSuccess,
         feedback: isSuccess
-          ? `水が加わって溶液全体が 100g になり、10g ÷ 100g × 100 ＝ 10.0% に薄まりました！`
-          : `現在: 溶液 ${calc.solutionG}g / 濃度 ${calc.formattedPercent}% （水を +50g 加えてみよう）`,
+          ? `水が加わって溶液全体が ${calc.solutionG}g になり、10g ÷ ${calc.solutionG}g × 100 ＝ ${calc.formattedPercent}% に薄まりました！`
+          : `現在: 溶液 ${calc.solutionG}g / 濃度 ${calc.formattedPercent}% （${hint}）`,
         particleExplanation: '粒の数（10g）はそのままですが、水色の液面が上がって粒同士の間隔が広がり、混み具合が半分になりました。',
       };
     },
