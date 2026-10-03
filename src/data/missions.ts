@@ -1,5 +1,5 @@
 import { Mission } from '../types';
-import { calculateMassPercent, calculateMolarConcentration, calculateMolesToQuantities } from '../utils/chemistry';
+import { calculateMassPercent, calculateMolarConcentration, calculateMolesToQuantities, calculateSolutionMass } from '../utils/chemistry';
 
 export const MISSIONS: Mission[] = [
   // ==========================================
@@ -29,7 +29,7 @@ export const MISSIONS: Mission[] = [
         id: 'c2',
         label: '10% のまま変わらない',
         isCorrect: true,
-        explanation: '大正解！取り分けても、水に対する粒の混み具合（密度）はどちらも全く同じです。',
+        explanation: '大正解！取り分けても、溶液全体に対する粒の混み具合（割合）はどちらも全く同じです。',
       },
       {
         id: 'c3',
@@ -40,7 +40,7 @@ export const MISSIONS: Mission[] = [
     ],
     checkCompletion: (state, predictionChoiceId) => {
       // Completed if user divided the beaker
-      const hasDivided = state.secondBeaker && state.secondBeaker.waterG > 0;
+      const hasDivided = !!state.secondBeaker && state.secondBeaker.waterG > 0;
       const beakerAPercent = calculateMassPercent(state.soluteG, state.waterG).percent;
       const isSuccess = hasDivided;
 
@@ -60,7 +60,7 @@ export const MISSIONS: Mission[] = [
     title: '分母は「水」？「溶液全体」？',
     subtitle: '質量パーセント濃度の計算で、割る相手を確かめよう',
     question: '水 90g に食塩 10g を溶かしました。この食塩水の質量パーセント濃度は何%でしょう？',
-    goalDescription: 'てんびんと式の数字に注目して、分母が何gになっているか確認しよう！',
+    goalDescription: '天秤と式の数字に注目して、分母が何gになっているか確認しよう！',
     targetMoves: 2,
     initialState: {
       soluteG: 10,
@@ -81,9 +81,9 @@ export const MISSIONS: Mission[] = [
       },
       {
         id: 'c3',
-        label: '9% （90g ÷ 10g の逆）',
+        label: '90% （90g ÷ 100g × 100）',
         isCorrect: false,
-        explanation: '食塩（溶質）の質量を、溶液全体の質量で割って求めます。',
+        explanation: '90g は水（溶媒）の質量です。割られる数（分子）には、食塩（溶質）の質量 10g を入れます。',
       },
     ],
     checkCompletion: (state, predictionChoiceId) => {
@@ -92,7 +92,7 @@ export const MISSIONS: Mission[] = [
       return {
         isSuccess: true,
         feedback: `現在: 食塩 ${state.soluteG}g ÷ 溶液 ${calc.solutionG}g × 100 ＝ 10.0% です！`,
-        particleExplanation: '「100gの溶液の中に何粒あるか」を見るのがパーセント濃度。水90gの中に10粒が入ると、全体は100gになり、ちょうど10%です。',
+        particleExplanation: '「溶液100gの中に食塩が何gあるか」を見るのがパーセント濃度。水90gに食塩10g（●10個）が入ると、全体は100gになり、ちょうど10%です。',
       };
     },
   },
@@ -104,7 +104,8 @@ export const MISSIONS: Mission[] = [
     subtitle: '目標の質量と濃度になるよう、溶質と水を操作しよう',
     question: '5%の食塩水 200g を作るには、食塩（溶質）は何g 必要でしょう？',
     goalDescription: '食塩と水を足して、「溶液200g・濃度5.0%」をビーカーに作ろう！',
-    targetMoves: 6,
+    // 最短手数：食塩 +5g×2、水 +50g×3 と +10g×4（= 10g + 190g）
+    targetMoves: 9,
     initialState: {
       soluteG: 0,
       waterG: 0,
@@ -137,7 +138,7 @@ export const MISSIONS: Mission[] = [
         feedback: isMatch
           ? `目標達成！ 食塩 ${state.soluteG}g ＋ 水 ${state.waterG}g ＝ 溶液 ${calc.solutionG}g （${calc.formattedPercent}%）が完成しました！`
           : `現在: 溶液 ${calc.solutionG}g / 濃度 ${calc.formattedPercent}% （目標: 溶液 200g・濃度 5.0% = 食塩 10g + 水 190g）`,
-        particleExplanation: '100g中に5粒ある割合にするため、200gの溶液全体の中に10粒の食塩が散らばっています。',
+        particleExplanation: '溶液100gあたり食塩5g（●5個）の割合にするため、200gの溶液全体の中に食塩10g（●10個）が散らばっています。',
       };
     },
   },
@@ -163,7 +164,7 @@ export const MISSIONS: Mission[] = [
         id: 'c1',
         label: '足し算されて 30% になる',
         isCorrect: false,
-        explanation: '食塩も増えますが、水も増えるので、30%のような激辛にはなりません！',
+        explanation: '食塩は30gに増えますが、溶液全体も200gに増えるので30%にはなりません。（そもそも食塩は20℃で約26%までしか溶けないので、30%の食塩水は作れません）',
       },
       {
         id: 'c2',
@@ -189,7 +190,7 @@ export const MISSIONS: Mission[] = [
         feedback: isSuccess
           ? `混ぜ合わせ完了！ 食塩の合計は 30g、溶液の合計は 200g なので、30 ÷ 200 × 100 ＝ 15.0% になりました！`
           : '「2つのビーカーを混ぜる」ボタンを押して確かめてみましょう。',
-        particleExplanation: '食塩（10粒＋20粒＝30粒）と溶液全体（100g＋100g＝200g）の比率を考えると、30÷200＝0.15（15%）と自然にわかります。',
+        particleExplanation: '食塩（10g＋20g＝30g、●30個）と溶液全体（100g＋100g＝200g）の比率を考えると、30÷200＝0.15（15%）と自然にわかります。',
       };
     },
   },
@@ -211,13 +212,13 @@ export const MISSIONS: Mission[] = [
         id: 'c1',
         label: '液の重さが2倍になり、濃度は半分の 10% になる',
         isCorrect: true,
-        explanation: '大正解！食塩（粒）の数は10gのまま、溶液が50gから100gへ2倍に増えたので、混み具合は半分（10%）に薄まります。',
+        explanation: '大正解！食塩の量は10gのまま、溶液が50gから100gへ2倍に増えたので、混み具合は半分（10%）に薄まります。',
       },
       {
         id: 'c2',
-        label: '食塩の粒の数は変わらないので、20% のまま',
+        label: '食塩の量は変わらないので、20% のまま',
         isCorrect: false,
-        explanation: '「粒の数（量）」は変わりませんが、水が増えて空間が広がるため「割合（濃度）」は薄まります。',
+        explanation: '「食塩の量（●の数）」は変わりませんが、水が増えて空間が広がるため「割合（濃度）」は薄まります。',
       },
       {
         id: 'c3',
@@ -228,13 +229,71 @@ export const MISSIONS: Mission[] = [
     ],
     checkCompletion: (state) => {
       const calc = calculateMassPercent(state.soluteG, state.waterG);
-      const isSuccess = state.soluteG === 10 && state.waterG >= 90;
+      // 食塩10g・水90g（水を +50g 加えた状態）になったときだけ達成
+      const isSuccess = Math.abs(state.soluteG - 10) < 0.01 && Math.abs(state.waterG - 90) < 0.01;
+      const hint = state.waterG > 90
+        ? '水を入れすぎています。リセットして、水をちょうど +50g 加えてみよう'
+        : '水を +50g 加えてみよう';
       return {
         isSuccess,
         feedback: isSuccess
-          ? `水が加わって溶液全体が 100g になり、10g ÷ 100g × 100 ＝ 10.0% に薄まりました！`
-          : `現在: 溶液 ${calc.solutionG}g / 濃度 ${calc.formattedPercent}% （水を +50g 加えてみよう）`,
-        particleExplanation: '粒の数（10g）はそのままですが、水色の液面が上がって粒同士の間隔が広がり、混み具合が半分になりました。',
+          ? `水が加わって溶液全体が ${calc.solutionG}g になり、10g ÷ ${calc.solutionG}g × 100 ＝ ${calc.formattedPercent}% に薄まりました！`
+          : `現在: 溶液 ${calc.solutionG}g / 濃度 ${calc.formattedPercent}% （${hint}）`,
+        particleExplanation: '食塩の量（●10個＝10g）はそのままですが、水色の液面が上がって●同士の間隔が広がり、混み具合が半分になりました。',
+      };
+    },
+  },
+  {
+    id: 'u1-m6',
+    unitId: 'unit1',
+    order: 6,
+    title: '重さの違う食塩水を混ぜたら？',
+    subtitle: '量が違う液を混ぜても、濃度は「真ん中」になるか確かめよう',
+    question: '5%の食塩水 100g と、20%の食塩水 200g を混ぜ合わせると、濃度は何%になるでしょう？',
+    goalDescription: '「混ぜる」ボタンを押して、混ぜた後の食塩の量・溶液全体の量・濃度を確かめよう！',
+    targetMoves: 2,
+    initialState: {
+      soluteG: 5,
+      waterG: 95,
+      secondBeaker: {
+        soluteG: 40,
+        waterG: 160,
+      },
+    },
+    choices: [
+      {
+        id: 'c1',
+        label: '12.5%（5% と 20% のちょうど真ん中）',
+        isCorrect: false,
+        explanation: 'ちょうど真ん中になるのは、同じ重さどうしを混ぜたとき（ミッション#4）だけです。今回は 20% の液が 2倍あります。',
+      },
+      {
+        id: 'c2',
+        label: '15%（20% の液が多いぶん、濃い方に寄る）',
+        isCorrect: true,
+        explanation: '大正解！食塩は 5g ＋ 40g ＝ 45g、溶液全体は 100g ＋ 200g ＝ 300g なので、45 ÷ 300 × 100 ＝ 15% です。',
+      },
+      {
+        id: 'c3',
+        label: '25%（5% ＋ 20%）',
+        isCorrect: false,
+        explanation: '濃度（割合）はそのまま足し算できません。食塩は増えますが、溶液全体も 300g に増えます。',
+      },
+    ],
+    checkCompletion: (state) => {
+      // 2つのビーカーを1つに混ぜ、食塩45g・溶液300g（15%）になったら達成
+      const hasMerged = !state.secondBeaker;
+      const calc = calculateMassPercent(state.soluteG, state.waterG);
+      const isSuccess = hasMerged && Math.abs(calc.solutionG - 300) < 0.01 && Math.abs(calc.percent - 15) < 0.01;
+
+      return {
+        isSuccess,
+        feedback: isSuccess
+          ? `混ぜ合わせ完了！ 食塩は 5g ＋ 40g ＝ ${calc.soluteG}g、溶液全体は 100g ＋ 200g ＝ ${calc.solutionG}g なので、${calc.soluteG} ÷ ${calc.solutionG} × 100 ＝ ${calc.formattedPercent}% になりました！`
+          : !hasMerged
+          ? '「混ぜる」ボタンを押して、2つのビーカーを1つにしてみましょう。'
+          : `現在: 食塩 ${calc.soluteG}g / 溶液 ${calc.solutionG}g / 濃度 ${calc.formattedPercent}%（混ぜる前に食塩や水を足すと変わってしまいます。リセットしてやり直そう）`,
+        particleExplanation: '濃度は「溶液全体に対する食塩の割合」なので、5% と 20% を平均するのではなく、食塩どうし（5g＋40g）・溶液どうし（100g＋200g）を足してから割ります。●で見ると、45個が 300g の中に散らばり、100g あたり 15個（15%）。20% の液の方が多いので、真ん中の 12.5% より濃い方に引っぱられます。',
       };
     },
   },
@@ -290,8 +349,8 @@ export const MISSIONS: Mission[] = [
     unitId: 'unit2',
     order: 2,
     title: '水 H₂O 2パックは何g？',
-    subtitle: 'パック数から重さ（g）を計算しよう',
-    question: '水（H₂O）2パック（2.0mol）の重さは何gでしょう？（H₂O のモル質量は 18.0g/mol）',
+    subtitle: 'パック数から質量（g）を計算しよう',
+    question: '水（H₂O）2パック（2.0mol）の質量は何gでしょう？（H₂O のモル質量は 18.0g/mol）',
     goalDescription: 'H₂O を選び、パック数を 2.0 に増やして重さを確かめよう！',
     targetMoves: 3,
     initialState: {
@@ -364,13 +423,16 @@ export const MISSIONS: Mission[] = [
       },
     ],
     checkCompletion: (state) => {
-      const q = calculateMolesToQuantities(state.packs, 'H2O');
-      const isSuccess = Math.abs(q.packs - 2.0) < 0.05;
+      const q = calculateMolesToQuantities(state.packs, state.substanceId);
+      const isH2O = state.substanceId === 'H2O';
+      const isSuccess = isH2O && Math.abs(q.packs - 2.0) < 0.05;
       return {
         isSuccess,
         feedback: isSuccess
           ? `36.0g ÷ 18.0g/mol ＝ 2.0パック（2.0mol）！ 粒の個数は ${q.formattedParticles} です！`
-          : `現在: ${q.massG}g（${q.packs}mol）。36gに合わせてみよう！`,
+          : isH2O
+          ? `現在: ${q.massG}g（${q.packs}mol）。36gに合わせてみよう！`
+          : `いまは H₂O 以外が選ばれています。物質を H₂O（水）に戻して、36gに合わせてみよう！`,
         particleExplanation: '全体の重さ(36g)を1パックの重さ(18g)で割ると、パック数(2)が出ます。個数は 6.02×10²³個 が2パック分あるので 1.20×10²⁴個 です。',
       };
     },
@@ -502,7 +564,7 @@ export const MISSIONS: Mission[] = [
         id: 'c3',
         label: '1.0mol/L より少し大きく（濃く）なる',
         isCorrect: false,
-        explanation: '体積が増えると、同じパック数でも密度は薄くなります。',
+        explanation: '体積が増えると、同じパック数でも1Lあたりの混み具合は小さく（薄く）なります。',
       },
     ],
     checkCompletion: (state) => {
@@ -649,7 +711,7 @@ export const MISSIONS: Mission[] = [
       return {
         isSuccess: hasHalved,
         feedback: hasHalved
-          ? `確認できました！ パック数は半分（約0.13mol）になりましたが、体積も約250mLに半分になったため、モル濃度は 0.50mol/L のまま変わりません！`
+          ? `確認できました！ パック数は半分（0.125mol）になりましたが、体積も約250mLに半分になったため、モル濃度は 0.50mol/L のまま変わりません！`
           : '「半分くみ出す」ボタンを押して確かめてみましょう。',
         particleExplanation: '質量パーセント濃度と同じで、モル濃度も「割合（濃さ）」です。ジュースを分けても甘さが変わらないように、一部を取り出してもモル濃度は変化しません。',
       };
@@ -666,7 +728,7 @@ export const MISSIONS: Mission[] = [
     title: '0.10mol/L の NaCl 溶液 500mL を作るには？',
     subtitle: 'カード帳のモル質量を使って、g ⇔ mol ⇔ 体積 をつなげよう',
     question: '0.10mol/L の NaCl 水溶液を 500mL（0.50L）作りたい。NaCl は何g 必要でしょう？（NaCl: 58.5g/mol）',
-    goalDescription: 'カード帳で 1パックの重さを確認し、必要な食塩を投入して標線 500mL に合わせよう！',
+    goalDescription: 'カード帳で 1パックの重さを確認し、必要な食塩を重さ（g）で入れて、標線 500mL に合わせよう！',
     targetMoves: 4,
     initialState: {
       flaskSubstanceId: 'NaCl',
@@ -688,7 +750,7 @@ export const MISSIONS: Mission[] = [
       },
       {
         id: 'c3',
-        label: '約 2.93g （0.050mol 分）',
+        label: '約 2.9g （0.050mol 分）',
         isCorrect: true,
         explanation: '大正解！必要なパック数は 0.10mol/L × 0.50L ＝ 0.050mol。重さは 58.5g/mol × 0.050mol ＝ 2.925g ≒ 2.9g です！',
       },
@@ -699,9 +761,9 @@ export const MISSIONS: Mission[] = [
       return {
         isSuccess,
         feedback: isSuccess
-          ? `完璧です！ 必要な NaCl は 0.05mol（約2.93g）。標線 500mL に合わせて 0.10mol/L の食塩水が完成しました！`
+          ? `完璧です！ 必要な NaCl は 0.050mol（約2.9g）。標線 500mL に合わせて 0.10mol/L の食塩水が完成しました！`
           : `現在: パック数 ${state.flaskPacks}mol / 溶液体積 ${calc.solutionVolumeML}mL / 濃度 ${calc.formattedConcentration}mol/L（目標: 0.10mol/L・500mL）`,
-        particleExplanation: 'ステップ①：必要なパック数は 0.10mol/L × 0.5L ＝ 0.05mol。 ステップ②：NaCl 1パックは58.5gなので、0.05パックは 58.5 × 0.05 ＝ 2.925g。このようにモルを仲介役にすることで、実験室で天秤に乗せるグラム（g）が求まります！',
+        particleExplanation: 'ステップ①：必要なパック数は 0.10mol/L × 0.5L ＝ 0.05mol。 ステップ②：NaCl 1パックは58.5gなので、0.05パックは 58.5 × 0.05 ＝ 2.925g ≒ 2.9g。このようにモルを仲介役にすることで、実験室で天秤に乗せるグラム（g）が求まります！',
       };
     },
   },
@@ -712,19 +774,19 @@ export const MISSIONS: Mission[] = [
     title: 'ブドウ糖 18g を溶かして 200mL にしたときのモル濃度は？',
     subtitle: '質量(g)からモル(mol)を求め、溶液の体積(L)で割ろう',
     question: 'ブドウ糖（C₆H₁₂O₆: 180g/mol）18.0g を水に溶かして、全体を 200mL（0.20L）にしました。モル濃度は何mol/L？',
-    goalDescription: 'C₆H₁₂O₆ を選び、18g（0.10mol）を溶かして体積 200mL に合わせたときのモル濃度を確認しよう！',
+    goalDescription: '空の容器にブドウ糖 18g を重さ（g）で入れ、標線 200mL まで水を合わせて、モル濃度を確かめよう！',
     targetMoves: 4,
     initialState: {
       flaskSubstanceId: 'C6H12O6',
-      flaskPacks: 0.1,
-      flaskWaterML: 189, // ~200mL total with solute
+      flaskPacks: 0,
+      flaskWaterML: 0,
     },
     choices: [
       {
         id: 'c1',
         label: '0.10mol/L',
         isCorrect: false,
-        explanation: '0.10mol ですが、体積が 1.0L ではなく 0.20L（200mL）なのでもっと高密度です。',
+        explanation: '0.10mol ですが、体積が 1.0L ではなく 0.20L（200mL）なので、1Lあたりではもっと濃くなります。',
       },
       {
         id: 'c2',
@@ -748,6 +810,61 @@ export const MISSIONS: Mission[] = [
           ? `正解！ 18.0g ＝ 0.10mol。0.10mol ÷ 0.20L ＝ 0.50mol/L です！`
           : `現在: パック数 ${state.flaskPacks}mol / 溶液体積 ${calc.solutionVolumeML}mL / 濃度 ${calc.formattedConcentration}mol/L`,
         particleExplanation: '重さ(18g)からパック数(0.10mol)に換算し、それを溶液のリットル数(0.20L)で割ると、1Lあたりのパック数＝モル濃度(0.50mol/L)がスッキリ導けます。',
+      };
+    },
+  },
+  {
+    id: 'u4-m3',
+    unitId: 'comprehensive',
+    order: 3,
+    title: '10%の食塩水は何 mol/L？（密度でつなぐ）',
+    subtitle: '質量パーセント濃度とモル濃度を、密度を使ってつなごう',
+    question: '質量パーセント濃度 10% の食塩水があります（密度 1.07 g/cm³）。この食塩水のモル濃度はおよそ何 mol/L でしょう？（NaCl: 58.5g/mol）',
+    goalDescription: '溶液1L（1000mL）で考えよう。密度から1Lの質量を求め、その10%ぶんの食塩を重さ（g）で入れて標線1Lに合わせ、質量パーセント濃度が10%になるか確かめよう！',
+    targetMoves: 3,
+    initialState: {
+      flaskSubstanceId: 'NaCl',
+      flaskPacks: 0,
+      flaskWaterML: 0,
+    },
+    choices: [
+      {
+        id: 'c1',
+        label: '約 1.7 mol/L（1L ＝ 1000g として 100g ÷ 58.5）',
+        isCorrect: false,
+        explanation: '溶液1Lを 1000g としてしまっています。密度が 1.07g/cm³ なので、1L（1000cm³）は 1070g あり、食塩はその10%の 107g です。',
+      },
+      {
+        id: 'c2',
+        label: '約 1.8 mol/L（1L ＝ 1070g として 107g ÷ 58.5）',
+        isCorrect: true,
+        explanation: '大正解！溶液1Lの質量は 1000mL × 1.07g/mL ＝ 1070g。食塩はその10%で 107g、107 ÷ 58.5 ≒ 1.83mol なので約 1.8mol/L です。',
+      },
+      {
+        id: 'c3',
+        label: '約 0.17 mol/L（10g ÷ 58.5）',
+        isCorrect: false,
+        explanation: '10% は「溶液100gあたり食塩10g」です。溶液1L（1070g）あたりでは 107g になります。',
+      },
+    ],
+    checkCompletion: (state) => {
+      const calc = calculateMolarConcentration(state.flaskPacks, state.flaskWaterML, state.flaskSubstanceId);
+      const mass = calculateSolutionMass(state.flaskPacks, state.flaskWaterML, state.flaskSubstanceId);
+      // 溶液1L・質量パーセント濃度10%（食塩 約107g）になったら達成
+      const isOneLiter = Math.abs(calc.solutionVolumeML - 1000) < 5;
+      const isTenPercent = Math.abs(mass.massPercent - 10) < 0.15;
+      const isSuccess = isOneLiter && isTenPercent;
+      const percent = mass.massPercent.toFixed(1);
+      return {
+        isSuccess,
+        feedback: isSuccess
+          ? `完成！ 溶液1Lの質量は ${mass.solutionMassG}g（密度 ${mass.densityGPerML.toFixed(2)}g/mL）、そのうち食塩が ${mass.soluteMassG}g で ${percent}%。食塩は ${calc.packs}mol なので、モル濃度は約 ${calc.formattedConcentration}mol/L です！`
+          : !isOneLiter
+          ? `現在: 溶液 ${calc.solutionVolumeML}mL / 質量パーセント濃度 ${percent}%（食塩を重さで入れてから、標線1Lに合わせよう）`
+          : mass.massPercent < 10
+          ? `現在: 溶液1Lの質量 ${mass.solutionMassG}g のうち食塩 ${mass.soluteMassG}g で ${percent}%。10%に届きません。1Lの質量は 1000g ではなく、密度 1.07 を使うと何gかな？`
+          : `現在: 溶液1Lの質量 ${mass.solutionMassG}g のうち食塩 ${mass.soluteMassG}g で ${percent}%。食塩が多すぎます。リセットしてやり直そう`,
+        particleExplanation: '質量パーセント濃度は「質量（g）あたり」、モル濃度は「体積（L）あたり」の濃さです。物差しが違うので、密度（溶液1mLあたりの質量）で「1Lの溶液は何gか」に直してからつなぎます。① 1L ＝ 1000mL × 1.07g/mL ＝ 1070g ② 食塩 ＝ 1070g × 0.10 ＝ 107g ③ 107g ÷ 58.5g/mol ≒ 1.83mol → 約1.8mol/L。食塩が溶けると同じ1Lでも水より重くなる（密度が1より大きい）ことがポイントです。',
       };
     },
   },

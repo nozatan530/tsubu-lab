@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Mission, ViewMode, UnitId } from '../types';
 import { ParticleBeaker } from './ParticleBeaker';
 import { MolePackLab } from './MolePackLab';
@@ -8,6 +9,7 @@ import { FormulaDisplay } from './FormulaDisplay';
 import { ScaleLegend } from './ScaleLegend';
 import { ViewSwitcher } from './ViewSwitcher';
 import { ResultModal } from './ResultModal';
+import { flaskFromMissionState, toMissionUpdates } from '../utils/operations';
 import { CheckCircle, Lock, RotateCcw, ArrowRight, BookOpen, HelpCircle, ChevronLeft } from 'lucide-react';
 
 interface MissionViewProps {
@@ -41,6 +43,7 @@ export const MissionView: React.FC<MissionViewProps> = ({
 
   // Evaluation & Result modal state
   const [isResultOpen, setIsResultOpen] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [resultStars, setResultStars] = useState<number>(1);
   const [isPredCorrect, setIsPredCorrect] = useState<boolean>(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string>('');
@@ -58,7 +61,9 @@ export const MissionView: React.FC<MissionViewProps> = ({
   const handleUpdateSim = (updates: any) => {
     // If prediction not made yet, ignore changes
     if (!selectedPrediction) return;
-    setSimState((prev: any) => ({ ...prev, ...updates }));
+    // MolarFlaskLab は packs / waterML / substanceId で返すので、ミッションの状態（flask*）に対応づける
+    const missionUpdates = toMissionUpdates(mission.unitId, updates);
+    setSimState((prev: any) => ({ ...prev, ...missionUpdates }));
     setMovesCount((prev) => prev + 1);
   };
 
@@ -67,6 +72,15 @@ export const MissionView: React.FC<MissionViewProps> = ({
 
     // Run chemistry evaluation logic
     const evalResult = mission.checkCompletion(simState, selectedPrediction);
+
+    if (!evalResult.isSuccess) {
+      // 未達成：星も記録も付けず、ヒントだけ出して操作を続けてもらう
+      setIsSuccess(false);
+      setFeedbackMessage(evalResult.feedback);
+      setIsResultOpen(true);
+      return;
+    }
+    setIsSuccess(true);
 
     const chosenChoice = mission.choices.find((c) => c.id === selectedPrediction);
     const isChoiceCorrect = !!chosenChoice?.isCorrect;
@@ -98,33 +112,35 @@ export const MissionView: React.FC<MissionViewProps> = ({
   const isControlsLocked = !selectedPrediction;
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-4 px-3 sm:px-6 space-y-4 animate-fade-in">
-      {/* Top Breadcrumb & Quick Actions */}
-      <div className="flex items-center justify-between gap-2">
+    <div className="w-full space-y-4 animate-fade-in">
+      {/* Top Breadcrumb & Quick Actions（320px 幅では右側が次の行に回る） */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <button
           type="button"
           onClick={onBackToMap}
-          className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 py-1.5 px-2.5 rounded-lg hover:bg-slate-100 transition-colors"
+          className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 py-1.5 px-1.5 sm:px-2.5 rounded-lg hover:bg-slate-100 transition-colors whitespace-nowrap shrink-0"
         >
           <ChevronLeft className="w-4 h-4" />
-          <span>単元マップへ</span>
+          <span>ミッション一覧へ</span>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Moles Card Book quick trigger */}
           {(mission.unitId === 'unit2' || mission.unitId === 'unit3' || mission.unitId === 'comprehensive') && (
             <button
               type="button"
               onClick={onOpenCardBook}
-              className="text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+              className="text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 sm:px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap"
+              title="カード帳を見る"
             >
               <BookOpen className="w-3.5 h-3.5 text-amber-600" />
-              <span>カード帳を見る</span>
+              <span className="hidden sm:inline">カード帳を見る</span>
+              <span className="sm:hidden">カード帳</span>
             </button>
           )}
 
           {/* Moves count indicator */}
-          <div className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-700">
+          <div className="text-xs font-mono font-bold px-2 sm:px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 whitespace-nowrap">
             手数: <span className="text-slate-900">{movesCount}</span>
             <span className="text-slate-400 font-normal ml-1">/ 目標 {mission.targetMoves}手</span>
           </div>
@@ -133,8 +149,8 @@ export const MissionView: React.FC<MissionViewProps> = ({
 
       {/* Question / Mission Prompt Card */}
       <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900">
+        <div className="flex items-start sm:items-center gap-2">
+          <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 whitespace-nowrap shrink-0 mt-0.5 sm:mt-0">
             ミッション #{mission.order}
           </span>
           <h2 className="text-base sm:text-lg font-bold text-slate-900">
@@ -244,11 +260,10 @@ export const MissionView: React.FC<MissionViewProps> = ({
 
               {(mission.unitId === 'unit3' || mission.unitId === 'comprehensive') && (
                 <MolarFlaskLab
-                  substanceId={simState.flaskSubstanceId || simState.substanceId || 'NaCl'}
-                  packs={simState.flaskPacks ?? simState.packs ?? 0.1}
-                  waterML={simState.flaskWaterML ?? simState.waterML ?? 900}
+                  {...flaskFromMissionState(simState)}
                   onUpdate={handleUpdateSim}
                   readOnly={isControlsLocked}
+                  showMassAndDensity={mission.unitId === 'comprehensive'}
                 />
               )}
             </>
@@ -294,25 +309,30 @@ export const MissionView: React.FC<MissionViewProps> = ({
         </div>
       </div>
 
-      {/* Result Modal */}
-      <ResultModal
-        isOpen={isResultOpen}
-        mission={mission}
-        starsEarned={resultStars}
-        isPredictionCorrect={isPredCorrect}
-        predictedChoiceId={selectedPrediction}
-        movesUsed={movesCount}
-        finalState={simState}
-        feedbackText={feedbackMessage}
-        particleExplanation={particleExplain}
-        onRetry={handleRetry}
-        onNext={() => {
-          setIsResultOpen(false);
-          if (onNextMission) onNextMission();
-        }}
-        onHome={onBackToMap}
-        hasNextMission={!!onNextMission}
-      />
+      {/* Result Modal：親の animate-fade-in（transform）の影響で fixed が画面からずれないよう、body 直下に出す */}
+      {createPortal(
+        <ResultModal
+          isOpen={isResultOpen}
+          isSuccess={isSuccess}
+          mission={mission}
+          starsEarned={resultStars}
+          isPredictionCorrect={isPredCorrect}
+          predictedChoiceId={selectedPrediction}
+          movesUsed={movesCount}
+          finalState={simState}
+          feedbackText={feedbackMessage}
+          particleExplanation={particleExplain}
+          onRetry={handleRetry}
+          onContinue={() => setIsResultOpen(false)}
+          onNext={() => {
+            setIsResultOpen(false);
+            if (onNextMission) onNextMission();
+          }}
+          onHome={onBackToMap}
+          hasNextMission={!!onNextMission}
+        />,
+        document.body
+      )}
     </div>
   );
 };

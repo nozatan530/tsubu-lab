@@ -11,6 +11,8 @@ interface DiagramTapeProps {
     substanceId?: string;
     packs?: number;
     flaskWaterML?: number;
+    flaskPacks?: number;
+    flaskSubstanceId?: string;
   };
 }
 
@@ -195,18 +197,21 @@ export const DiagramTape: React.FC<DiagramTapeProps> = ({ unitId, state }) => {
           </span>
           <div className="flex flex-wrap gap-1.5 p-3 bg-slate-100 rounded-xl border border-slate-200">
             {Array.from({ length: 30 }).map((_, idx) => {
-              const active = idx < q.pieces;
+              const active = idx < Math.floor(q.pieces + 1e-9);
+              const partial = !active && idx < q.pieces; // 0.1mol 未満の端数
               return (
                 <div
                   key={`tape-piece-${idx}`}
                   className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-mono font-bold transition-all ${
                     active
                       ? `${theme.activeSlot} text-white shadow-xs scale-105`
+                      : partial
+                      ? `${theme.activeSlot} text-white opacity-50 border border-dashed border-slate-400`
                       : 'bg-white text-slate-300 border border-slate-200'
                   }`}
                   title={`小分け ${(idx * 0.1).toFixed(1)} mol`}
                 >
-                  {active ? (
+                  {active || partial ? (
                     <span className="text-[11px]">{substance.icon}</span>
                   ) : (
                     <span className="text-[9px] text-slate-300">○</span>
@@ -224,9 +229,9 @@ export const DiagramTape: React.FC<DiagramTapeProps> = ({ unitId, state }) => {
   }
 
   // Unit 3 & Comprehensive
-  const flaskPacks = state.packs ?? 0.1;
+  const flaskPacks = state.flaskPacks ?? state.packs ?? 0.1;
   const flaskWaterML = state.flaskWaterML ?? 900;
-  const substanceId = state.substanceId || 'NaCl';
+  const substanceId = state.flaskSubstanceId || state.substanceId || 'NaCl';
   const substance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
   const calc = calculateMolarConcentration(flaskPacks, flaskWaterML, substanceId);
 
@@ -238,7 +243,7 @@ export const DiagramTape: React.FC<DiagramTapeProps> = ({ unitId, state }) => {
           <span>図（1L換算図）：溶液1Lの中にパックがいくつあるか</span>
         </h3>
         <p className="text-xs text-slate-500 mt-0.5">
-          モル濃度は「溶液1L（1000mL）あたり何パック（mol）あるか」という割合（密度）です。
+          モル濃度は「溶液1L（1000mL）あたり何パック（mol）あるか」という割合（混み具合）です。
         </p>
       </div>
 
@@ -281,7 +286,7 @@ export const DiagramTape: React.FC<DiagramTapeProps> = ({ unitId, state }) => {
 
       <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 leading-relaxed">
         💡 <strong>ポイント：</strong> 水を足して体積を大きくすると、パックが広い空間に散らばるのでモル濃度は下がります。
-        逆に一部を取り出しても（くみ出し）、1Lあたりの密度は変わらないためモル濃度は同じです。
+        逆に一部を取り出しても（くみ出し）、1Lあたりの混み具合は変わらないためモル濃度は同じです。
       </div>
     </div>
   );

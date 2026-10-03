@@ -33,8 +33,11 @@
 
 - プロンプト評価: `node --env-file=.env scripts/eval-prompt.mjs <機能名>`
 - 開発サーバー: `npm run dev`（http://localhost:3000）
-- テスト: なし（型チェックは `npm run lint`）
+- テスト: `npm run check`（ミッションの判定と濃度計算のチェック。型チェックは `npm run lint`）
+  - ミッションを追加・変更したら `scripts/check-missions.ts` の `SOLUTIONS`（正しい手順）と `MISTAKES`（よくある間違いの手順）にも追加する
+  - 実験室のボタン操作は `src/utils/operations.ts` にまとめてあり、画面とチェックの両方がここを使う
 - ビルド: `npm run build`（出力は `dist/`）
+- CI: プッシュ（main）とプルリクエストのたびに GitHub Actions（`.github/workflows/check.yml`）が lint・check・build を実行する
 
 ## 技術スタック
 

@@ -16,7 +16,7 @@ const UNITS = [
     id: 'unit1' as UnitId,
     num: '①',
     title: '質量パーセント濃度',
-    concept: '粒（1g）と液面の高さで「割合」を見る',
+    concept: '●（食塩1gぶん）と液面の高さで「割合」を見る',
     tagline: '分けても濃度は不変！分母は「水」ではなく「溶液全体」',
     color: 'from-orange-500 to-amber-500',
     borderColor: 'border-orange-200',
@@ -29,7 +29,7 @@ const UNITS = [
     id: 'unit2' as UnitId,
     num: '②',
     title: '物質量（モル）',
-    concept: '1パック（6.02×10²³個）の箱と10個の小分け',
+    concept: '1パック（6.02×10²³個）と10個の小分け',
     tagline: 'ミカン箱とスイカ箱！物質によって1パックの重さが違う',
     color: 'from-amber-500 to-yellow-500',
     borderColor: 'border-amber-200',
@@ -42,7 +42,7 @@ const UNITS = [
     id: 'unit3' as UnitId,
     num: '③',
     title: 'モル濃度',
-    concept: '目盛り付きメスフラスコと標線合わせ',
+    concept: '標線に合わせて「溶液全体」の体積を決める',
     tagline: '「水1Lに溶かす」と「溶液全体を1Lにする」は大違い！',
     color: 'from-emerald-500 to-teal-500',
     borderColor: 'border-emerald-200',
@@ -95,9 +95,9 @@ export const HomeMap: React.FC<HomeMapProps> = ({
               つぶラボで体験する「量」と「割合」
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              公式の丸暗記はもういりません。
+              公式を覚える前に、まず仕組みを体験しよう。
               <strong>「予想する → 粒を動かして確かめる → 粒・図・式の3つで見比べる」</strong>
-              ことで、モルと濃度の仕組みがスッキリ腑に落ちます。
+              ことで、公式の意味（何を何で割っているのか）がつかめます。
             </p>
           </div>
 

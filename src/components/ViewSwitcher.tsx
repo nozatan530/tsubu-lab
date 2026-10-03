@@ -16,44 +16,44 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
   return (
     <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white/95 p-1.5 rounded-xl border border-slate-200/80 shadow-xs ${className}`}>
       {/* 3 Modes Segmented Control */}
-      <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-lg">
+      <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-lg">{/* スマホ幅では「粒・図・式」だけを表示し、3つを等分に並べる */}
         <button
           type="button"
           onClick={() => onViewChange('particles')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
+          className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 text-sm sm:text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
             currentView === 'particles'
               ? 'bg-white text-slate-900 shadow-xs ring-1 ring-slate-950/5'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
           }`}
         >
           <CircleDot className={`w-3.5 h-3.5 ${currentView === 'particles' ? 'text-orange-500' : 'text-slate-400'}`} />
-          <span>粒（ビーカー・箱）</span>
+          <span>粒<span className="hidden sm:inline">（ビーカー・パック）</span></span>
         </button>
 
         <button
           type="button"
           onClick={() => onViewChange('diagram')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
+          className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 text-sm sm:text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
             currentView === 'diagram'
               ? 'bg-white text-slate-900 shadow-xs ring-1 ring-slate-950/5'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
           }`}
         >
           <BarChart3 className={`w-3.5 h-3.5 ${currentView === 'diagram' ? 'text-sky-500' : 'text-slate-400'}`} />
-          <span>図（線分・帯グラフ）</span>
+          <span>図<span className="hidden sm:inline">（線分・帯グラフ）</span></span>
         </button>
 
         <button
           type="button"
           onClick={() => onViewChange('formula')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
+          className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 text-sm sm:text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
             currentView === 'formula'
               ? 'bg-white text-slate-900 shadow-xs ring-1 ring-slate-950/5'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
           }`}
         >
           <Calculator className={`w-3.5 h-3.5 ${currentView === 'formula' ? 'text-purple-600' : 'text-slate-400'}`} />
-          <span>式（公式・計算）</span>
+          <span>式<span className="hidden sm:inline">（公式・計算）</span></span>
         </button>
       </div>
 

@@ -1,5 +1,14 @@
 import React, { useMemo } from 'react';
 import { calculateMassPercent } from '../utils/chemistry';
+import {
+  BeakerState,
+  BEAKER_INITIAL,
+  BEAKER_MAX_SOLUTE_G,
+  beakerAddSolute,
+  beakerAddWater,
+  beakerMerge,
+  beakerSplit,
+} from '../utils/operations';
 import { Plus, Split, Combine, RotateCcw } from 'lucide-react';
 
 interface ParticleBeakerProps {
@@ -15,6 +24,26 @@ interface ParticleBeakerProps {
   readOnly?: boolean;
 }
 
+// ビーカーの目盛り（最大 300g）。液面の高さと同じ基準で位置を決める
+const BEAKER_MAX_G = 300;
+const liquidHeightPct = (solutionG: number) =>
+  solutionG <= 0 ? 6 : Math.min(100, Math.max(2, (solutionG / BEAKER_MAX_G) * 100));
+
+const BeakerTicks: React.FC = () => (
+  <div className="absolute inset-2 select-none pointer-events-none z-10">
+    {[50, 100, 150, 200, 250, 300].map((g) => (
+      <div
+        key={g}
+        className="absolute left-0 flex items-center gap-0.5 translate-y-1/2"
+        style={{ bottom: `${(g / BEAKER_MAX_G) * 100}%` }}
+      >
+        <div className="w-2 h-px bg-slate-400/70" />
+        <span className="text-[9px] font-mono text-slate-400">{g}g</span>
+      </div>
+    ))}
+  </div>
+);
+
 export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
   soluteG,
   waterG,
@@ -25,6 +54,8 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
   const calcA = calculateMassPercent(soluteG, waterG);
   const calcB = secondBeaker ? calculateMassPercent(secondBeaker.soluteG, secondBeaker.waterG) : null;
   const hasSecond = secondBeaker && secondBeaker.waterG + secondBeaker.soluteG > 0;
+  // 同じ濃度なら「くみ出した分」、違えば別の食塩水として扱う（混ぜる前の2つの液など）
+  const isSameConcentration = !!calcB && Math.abs(calcA.percent - calcB.percent) < 0.05;
 
   // Generate deterministic particle coordinates inside the liquid area for Beaker A
   const particlesA = useMemo(() => {
@@ -57,68 +88,34 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
   }, [secondBeaker]);
 
   // Operations
+  const state: BeakerState = { soluteG, waterG, secondBeaker };
+
   const handleAddSolute = (amount: number) => {
     if (readOnly) return;
-    const nextSolute = Math.min(50, soluteG + amount);
-    onUpdate({
-      soluteG: nextSolute,
-      waterG,
-      secondBeaker,
-      actionDescription: `溶質（食塩）+${amount}g`,
-    });
+    onUpdate({ ...beakerAddSolute(state, amount), actionDescription: `溶質（食塩）+${amount}g` });
   };
 
   const handleAddWater = (amount: number) => {
     if (readOnly) return;
-    const nextWater = Math.min(260, waterG + amount);
-    onUpdate({
-      soluteG,
-      waterG: nextWater,
-      secondBeaker,
-      actionDescription: `水 +${amount}g`,
-    });
+    onUpdate({ ...beakerAddWater(state, amount), actionDescription: `水 +${amount}g` });
   };
 
   const handleSplit = (fraction: number) => {
     if (readOnly) return;
-    const splitSolute = Math.round(soluteG * fraction);
-    const splitWater = Math.round(waterG * fraction);
-
-    const remainingSolute = soluteG - splitSolute;
-    const remainingWater = waterG - splitWater;
-
-    const currentSecondSolute = secondBeaker?.soluteG || 0;
-    const currentSecondWater = secondBeaker?.waterG || 0;
-
     onUpdate({
-      soluteG: remainingSolute,
-      waterG: remainingWater,
-      secondBeaker: {
-        soluteG: currentSecondSolute + splitSolute,
-        waterG: currentSecondWater + splitWater,
-      },
+      ...beakerSplit(state, fraction),
       actionDescription: fraction === 0.5 ? '半分くみ出す' : '1/4くみ出す',
     });
   };
 
   const handleMerge = () => {
     if (readOnly || !secondBeaker) return;
-    onUpdate({
-      soluteG: soluteG + secondBeaker.soluteG,
-      waterG: waterG + secondBeaker.waterG,
-      secondBeaker: undefined,
-      actionDescription: '2つのビーカーを混ぜる',
-    });
+    onUpdate({ ...beakerMerge(state), actionDescription: '2つのビーカーを混ぜる' });
   };
 
   const handleReset = () => {
     if (readOnly) return;
-    onUpdate({
-      soluteG: 10,
-      waterG: 90,
-      secondBeaker: undefined,
-      actionDescription: '初期状態（10% 100g）にリセット',
-    });
+    onUpdate({ ...BEAKER_INITIAL, actionDescription: '初期状態（10% 100g）にリセット' });
   };
 
   return (
@@ -146,24 +143,19 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
               <div className="absolute top-0 -left-1 w-3 h-3 border-t-4 border-l-4 border-slate-400/40 rounded-tl-sm -rotate-45" />
 
               {/* Volume tick marks on beaker */}
-              <div className="absolute left-1 top-4 bottom-4 flex flex-col justify-between text-[9px] font-mono text-slate-500 select-none pointer-events-none">
-                <span>300g</span>
-                <span>200g</span>
-                <span>100g</span>
-                <span>50g</span>
-              </div>
+              <BeakerTicks />
 
               {/* Water Liquid Area */}
               <div
                 className="w-full bg-linear-to-b from-sky-400/70 to-sky-600/80 rounded-b-xl relative transition-all duration-300 ease-out overflow-hidden"
                 style={{
-                  height: `${Math.min(94, Math.max(6, (calcA.solutionG / 300) * 100))}%`,
+                  height: `${liquidHeightPct(calcA.solutionG)}%`,
                 }}
               >
                 {/* Surface Meniscus highlight */}
                 <div className="absolute top-0 inset-x-0 h-2 bg-sky-200/50 blur-[1px]" />
 
-                {/* Orange Solute Particles (1粒 = 1g) */}
+                {/* Orange Solute Markers (●1個 = 食塩1g) */}
                 {particlesA.map((p) => (
                   <div
                     key={p.id}
@@ -172,7 +164,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                       left: `${p.xPct}%`,
                       top: `${p.yPct}%`,
                     }}
-                    title="溶質 1g"
+                    title="食塩 1g ぶんの目印"
                   />
                 ))}
 
@@ -201,7 +193,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
           {hasSecond && (
             <div className="flex flex-col items-center justify-center text-slate-400 gap-1">
               <Split className="w-5 h-5 text-amber-400 rotate-90 md:rotate-0" />
-              <span className="text-[11px] font-sans text-amber-200">分けた</span>
+              <span className="text-[11px] font-sans text-amber-200">{isSameConcentration ? '分けた' : '別の液'}</span>
             </div>
           )}
 
@@ -210,20 +202,15 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
             <div className="flex flex-col items-center animate-fade-in">
               <span className="text-xs font-semibold text-amber-300 mb-1.5 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                ビーカー B（くみ出した分）
+                {isSameConcentration ? 'ビーカー B（くみ出した分）' : 'ビーカー B'}
               </span>
               <div className="relative w-44 h-56 sm:w-48 sm:h-60 bg-slate-900/60 rounded-b-2xl border-x-4 border-b-4 border-amber-400/40 shadow-inner flex flex-col justify-end p-2 overflow-hidden">
-                <div className="absolute left-1 top-4 bottom-4 flex flex-col justify-between text-[9px] font-mono text-slate-500 select-none pointer-events-none">
-                  <span>300g</span>
-                  <span>200g</span>
-                  <span>100g</span>
-                  <span>50g</span>
-                </div>
+                <BeakerTicks />
 
                 <div
                   className="w-full bg-linear-to-b from-sky-400/70 to-sky-600/80 rounded-b-xl relative transition-all duration-300 ease-out overflow-hidden"
                   style={{
-                    height: `${Math.min(94, Math.max(6, (calcB!.solutionG / 300) * 100))}%`,
+                    height: `${liquidHeightPct(calcB!.solutionG)}%`,
                   }}
                 >
                   <div className="absolute top-0 inset-x-0 h-2 bg-sky-200/50 blur-[1px]" />
@@ -237,7 +224,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                         left: `${p.xPct}%`,
                         top: `${p.yPct}%`,
                       }}
-                      title="溶質 1g"
+                      title="食塩 1g ぶんの目印"
                     />
                   ))}
                 </div>
@@ -257,19 +244,33 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
           )}
         </div>
 
+        {/* 単元②の「1粒は軽すぎて測れない」と矛盾しないよう、●が何を表すかを明示する */}
+        <p className="relative z-10 mt-3 text-[11px] text-slate-400 text-center leading-relaxed">
+          ※ オレンジの●1個は<strong className="text-orange-300">「食塩 1g ぶん」の目印</strong>です。
+          本物の粒（Na⁺ と Cl⁻）は小さすぎて見えず、食塩 1g の中にも約 1×10²² 組も入っています。
+        </p>
+
         {/* Crowding insight banner when partitioned */}
         {hasSecond && (
           <div className="mt-4 p-2.5 bg-amber-950/60 border border-amber-500/30 rounded-xl text-center text-xs text-amber-200 font-medium">
-            💡 注目！ ビーカーAもBも、粒同士の距離（混み具合）は同じ＝どちらも濃度は <strong className="font-mono text-white underline">{calcA.formattedPercent}%</strong> のまま変わりません！
+            {isSameConcentration ? (
+              <>
+                💡 注目！ ビーカーAもBも、粒同士の距離（混み具合）は同じ＝どちらも濃度は <strong className="font-mono text-white underline">{calcA.formattedPercent}%</strong> のまま変わりません！
+              </>
+            ) : (
+              <>
+                💡 ビーカーA（<strong className="font-mono text-white">{calcA.formattedPercent}%</strong>）とビーカーB（<strong className="font-mono text-white">{calcB!.formattedPercent}%</strong>）は濃さが違います。混ぜると粒の混み具合はどうなるかな？
+              </>
+            )}
           </div>
         )}
       </div>
 
       {/* Lab Scale / Balance Readout Box */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col gap-3">
-        <div className="flex items-center justify-between text-xs text-slate-500 border-b border-slate-100 pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-slate-500 border-b border-slate-100 pb-2">
           <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-            <span className="text-base">⚖️</span> てんびん表示（メインビーカー）
+            <span className="text-base">⚖️</span> 天秤の表示（メインビーカー）
           </span>
           <span className="text-[11px] text-slate-400">分母は「溶液全体」</span>
         </div>
@@ -320,12 +321,12 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {/* Add Solute */}
             <div className="flex flex-col gap-1">
-              <span className="text-[11px] font-medium text-orange-700">食塩を足す（粒）</span>
+              <span className="text-[11px] font-medium text-orange-700">食塩を足す（●）</span>
               <div className="flex gap-1">
                 <button
                   type="button"
                   onClick={() => handleAddSolute(1)}
-                  disabled={soluteG >= 50}
+                  disabled={soluteG >= BEAKER_MAX_SOLUTE_G}
                   className="flex-1 py-2 text-xs font-bold text-orange-800 bg-orange-100 hover:bg-orange-200 active:bg-orange-300 rounded-lg transition-colors border border-orange-300/80 disabled:opacity-50"
                 >
                   +1g
@@ -333,7 +334,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                 <button
                   type="button"
                   onClick={() => handleAddSolute(5)}
-                  disabled={soluteG >= 50}
+                  disabled={soluteG >= BEAKER_MAX_SOLUTE_G}
                   className="flex-1 py-2 text-xs font-bold text-orange-900 bg-orange-200 hover:bg-orange-300 active:bg-orange-400 rounded-lg transition-colors border border-orange-300 disabled:opacity-50"
                 >
                   +5g

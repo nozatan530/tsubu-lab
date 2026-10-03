@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 import { SUBSTANCES } from '../data/cards';
-import { calculateMolarConcentration } from '../utils/chemistry';
-import { Beaker, Droplets, Target, Split, AlertCircle, Sparkles } from 'lucide-react';
+import { calculateMolarConcentration, calculateSolutionMass } from '../utils/chemistry';
+import {
+  FlaskState,
+  FLASK_MAX_PACKS,
+  flaskAddGrams,
+  flaskAlignToMark,
+  flaskChangePacks,
+  flaskChangeWater,
+  flaskTakeOut,
+} from '../utils/operations';
+import { Beaker, Droplets, Target, Split, AlertCircle, Sparkles, Scale } from 'lucide-react';
 
 interface MolarFlaskLabProps {
   substanceId: string;
@@ -14,7 +23,12 @@ interface MolarFlaskLabProps {
     actionDescription?: string;
   }) => void;
   readOnly?: boolean;
+  showMassAndDensity?: boolean; // 単元④：溶液の質量・密度・質量パーセント濃度も表示する
 }
+
+// 容器の最大目盛りと、標線合わせができる目盛り
+const FLASK_MAX_ML = 1200;
+const FLASK_MARKS_ML = [100, 200, 500, 1000];
 
 export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
   substanceId,
@@ -22,70 +36,54 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
   waterML,
   onUpdate,
   readOnly = false,
+  showMassAndDensity = false,
 }) => {
   const currentSubstance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
   const calc = calculateMolarConcentration(packs, waterML, substanceId);
-  const [selectedMark, setSelectedMark] = useState<number>(1000); // 100, 500, or 1000 mL
+  const massInfo = calculateSolutionMass(packs, waterML, substanceId);
+  const [selectedMark, setSelectedMark] = useState<number>(1000); // 100, 200, 500, or 1000 mL
+  const [inputGrams, setInputGrams] = useState<string>('');
+
+  const state: FlaskState = { substanceId, packs, waterML };
 
   const handlePacksChange = (delta: number) => {
     if (readOnly) return;
-    const nextPacks = Math.max(0, Math.min(5, Math.round((packs + delta) * 10) / 10));
-    onUpdate({
-      packs: nextPacks,
-      waterML,
-      actionDescription: `パック ${delta > 0 ? `+${delta}` : delta}mol`,
-    });
+    onUpdate({ ...flaskChangePacks(state, delta), actionDescription: `パック ${delta > 0 ? `+${delta}` : delta}mol` });
   };
 
   const handleWaterChange = (delta: number) => {
     if (readOnly) return;
-    const nextWater = Math.max(0, Math.min(1200, waterML + delta));
+    onUpdate({ ...flaskChangeWater(state, delta), actionDescription: `水 ${delta > 0 ? `+${delta}` : delta}mL` });
+  };
+
+  // 天秤で量った溶質（g）をフラスコに加える（g → mol の換算）
+  const handleAddGrams = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (readOnly) return;
+    const grams = parseFloat(inputGrams);
+    if (isNaN(grams) || grams <= 0) return;
+    const next = flaskAddGrams(state, grams);
     onUpdate({
-      packs,
-      waterML: nextWater,
-      actionDescription: `水 ${delta > 0 ? `+${delta}` : delta}mL`,
+      ...next,
+      actionDescription: `${currentSubstance.formula} ${grams}g（${Number((next.packs - packs).toFixed(3))}mol）を加える`,
     });
+    setInputGrams('');
   };
 
   const handleAlignToMark = (targetML: number) => {
     if (readOnly) return;
     setSelectedMark(targetML);
-    // Solute expands volume: water + soluteContribution = targetML
-    // Therefore waterML = Math.max(0, targetML - soluteContribution)
-    const soluteVol = Math.round(packs * currentSubstance.volumePerMolML);
-    const targetWater = Math.max(0, targetML - soluteVol);
-    onUpdate({
-      packs,
-      waterML: targetWater,
-      actionDescription: `標線 ${targetML}mL まで水を合わせる`,
-    });
+    onUpdate({ ...flaskAlignToMark(state, targetML), actionDescription: `標線 ${targetML}mL まで水を合わせる` });
   };
 
   const handleTakeOut = (type: 'half' | '100ml') => {
     if (readOnly || calc.solutionVolumeML <= 0) return;
-    if (type === 'half') {
-      const nextPacks = Math.round((packs * 0.5) * 100) / 100;
-      const nextWater = Math.round(waterML * 0.5);
-      onUpdate({
-        packs: nextPacks,
-        waterML: nextWater,
-        actionDescription: '半分くみ出す',
-      });
-    } else {
-      const ratio = 100 / calc.solutionVolumeML;
-      if (ratio >= 1) return;
-      const nextPacks = Math.max(0, Math.round((packs * (1 - ratio)) * 100) / 100);
-      const nextWater = Math.max(0, Math.round(waterML * (1 - ratio)));
-      onUpdate({
-        packs: nextPacks,
-        waterML: nextWater,
-        actionDescription: '100mLくみ出す',
-      });
-    }
+    onUpdate({ ...flaskTakeOut(state, type), actionDescription: type === 'half' ? '半分くみ出す' : '100mLくみ出す' });
   };
 
   // Percentage height for the flask (max 1200mL scale)
-  const fillPct = Math.min(96, Math.max(4, (calc.solutionVolumeML / 1200) * 100));
+  const fillPct =
+    calc.solutionVolumeML <= 0 ? 4 : Math.min(100, Math.max(1, (calc.solutionVolumeML / FLASK_MAX_ML) * 100));
 
   return (
     <div className="w-full flex flex-col gap-4">
@@ -103,7 +101,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
           <div className="flex items-center justify-between w-full mb-3 text-xs text-slate-300">
             <span className="font-semibold flex items-center gap-1.5">
               <Beaker className="w-4 h-4 text-emerald-400" />
-              <span>メスフラスコ型 容器（目盛り付き）</span>
+              <span>標線付きの容器（溶液全体を標線に合わせる）</span>
             </span>
             <span className="font-mono text-emerald-300 text-[11px] bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/30">
               溶液全体の体積: {calc.solutionVolumeML} mL（{calc.solutionVolumeL.toFixed(2)} L）
@@ -113,26 +111,28 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
           {/* Measuring Flask Graphic */}
           <div className="relative w-52 sm:w-64 h-64 sm:h-72 flex flex-col items-center justify-end pb-3">
             {/* Flask Neck at top */}
-            <div className="w-16 h-20 border-x-4 border-slate-400/40 relative z-20 flex flex-col justify-end">
-              {/* 1L (1000mL) Mark on the neck */}
-              <div className="absolute top-6 -left-3 right-0 flex items-center">
-                <div className="w-5 h-[2px] bg-rose-500 shadow-xs"></div>
-                <span className="text-[10px] font-mono font-bold text-rose-400 ml-1">標線 1L (1000mL)</span>
-              </div>
-            </div>
+            <div className="w-16 h-20 border-x-4 border-slate-400/40 relative z-20" />
 
             {/* Flask Bulb / Body at bottom */}
             <div className="relative w-48 sm:w-56 h-48 sm:h-52 bg-slate-900/60 rounded-b-[40px] rounded-t-2xl border-x-4 border-b-4 border-slate-400/40 shadow-inner flex flex-col justify-end p-2 overflow-hidden">
-              {/* Other Calibration Marks (100mL, 500mL) */}
-              <div className="absolute left-2 inset-y-4 flex flex-col justify-between text-[9px] font-mono text-slate-400 select-none pointer-events-none z-30">
-                <div className="flex items-center gap-1" style={{ position: 'absolute', bottom: `${(500 / 1200) * 100}%` }}>
-                  <div className="w-4 h-[1.5px] bg-emerald-400/80"></div>
-                  <span className="text-emerald-300">500mL</span>
-                </div>
-                <div className="flex items-center gap-1" style={{ position: 'absolute', bottom: `${(100 / 1200) * 100}%` }}>
-                  <div className="w-3 h-[1.5px] bg-emerald-400/80"></div>
-                  <span className="text-emerald-300">100mL</span>
-                </div>
+              {/* Calibration Marks：液面と同じ基準（最大 1200mL）で位置を決める */}
+              <div className="absolute inset-2 select-none pointer-events-none z-30">
+                {FLASK_MARKS_ML.map((ml) => (
+                  <div
+                    key={ml}
+                    className="absolute left-0 right-0 flex items-center gap-1 translate-y-1/2"
+                    style={{ bottom: `${(ml / FLASK_MAX_ML) * 100}%` }}
+                  >
+                    <div className={ml === 1000 ? 'w-full h-[2px] bg-rose-500/80 absolute left-0' : 'w-3 h-[1.5px] bg-emerald-400/80'} />
+                    <span
+                      className={`relative text-[9px] font-mono font-bold px-0.5 rounded-xs bg-slate-950/50 ${
+                        ml === 1000 ? 'text-rose-300 ml-1' : 'text-emerald-300'
+                      }`}
+                    >
+                      {ml === 1000 ? '標線 1L' : `${ml}mL`}
+                    </span>
+                  </div>
+                ))}
               </div>
 
               {/* Liquid inside flask */}
@@ -153,7 +153,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                         style={{ backgroundColor: currentSubstance.theme.accent }}
                       >
                         <span>{currentSubstance.icon}</span>
-                        <span>{idx === Math.ceil(calc.packs) - 1 && calc.packs % 1 !== 0 ? (calc.packs % 1).toFixed(1) : '1.0'}mol</span>
+                        <span>{idx === Math.ceil(calc.packs) - 1 && calc.packs % 1 !== 0 ? Number((calc.packs % 1).toFixed(3)) : '1.0'}mol</span>
                       </div>
                     ))}
                   </div>
@@ -179,12 +179,15 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
               水 {calc.waterML}mL ＋ 溶質 {calc.soluteVolumeContributionML}mL ＝ 溶液全体 {calc.solutionVolumeML}mL
             </span>
           </div>
+          <p className="w-full mt-1.5 text-[10px] text-slate-400 leading-relaxed">
+            ※ 本物のメスフラスコは標線が1本だけで、100mL用・500mL用・1L用のように容器を使い分けます。ここでは1つの容器に標線をまとめています。
+          </p>
         </div>
       </div>
 
       {/* Metrics Readout Box */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col gap-3">
-        <div className="flex items-center justify-between text-xs text-slate-500 border-b border-slate-100 pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-slate-500 border-b border-slate-100 pb-2">
           <span className="font-semibold text-slate-700 flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-purple-600" />
             <span>モル濃度表示（溶液1Lあたり何パックあるか）</span>
@@ -230,6 +233,36 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
             </span>
           </div>
         </div>
+
+        {/* 質量・密度（質量パーセント濃度とモル濃度をつなぐ） */}
+        {showMassAndDensity && (
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-slate-500">
+              <span className="font-semibold text-slate-700">⚖️ 質量で見ると（密度でモル濃度とつながる）</span>
+              <span className="text-[11px] text-slate-400">水 1mL ＝ 1g として計算</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2">
+                <span className="text-[11px] font-medium text-slate-600 block">溶液の質量</span>
+                <span className="text-lg font-bold font-mono text-slate-800 tabular-nums">{massInfo.solutionMassG}</span>
+                <span className="text-[11px] ml-0.5 text-slate-600">g</span>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2">
+                <span className="text-[11px] font-medium text-slate-600 block">密度</span>
+                <span className="text-lg font-bold font-mono text-slate-800 tabular-nums">{massInfo.densityGPerML.toFixed(3)}</span>
+                <span className="text-[11px] ml-0.5 text-slate-600">g/mL</span>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2">
+                <span className="text-[11px] font-medium text-slate-600 block">質量％濃度</span>
+                <span className="text-lg font-bold font-mono text-slate-800 tabular-nums">{massInfo.massPercent.toFixed(1)}</span>
+                <span className="text-[11px] ml-0.5 text-slate-600">%</span>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              溶質 {massInfo.soluteMassG}g ÷ 溶液 {massInfo.solutionMassG}g × 100 ＝ {massInfo.massPercent.toFixed(1)}%　／　密度 ＝ 溶液 {massInfo.solutionMassG}g ÷ {calc.solutionVolumeML}mL
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Control Deck */}
@@ -264,7 +297,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handlePacksChange(0.1)}
-                  disabled={packs >= 5}
+                  disabled={packs >= FLASK_MAX_PACKS}
                   className="py-1.5 text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-300 disabled:opacity-40 transition-colors"
                 >
                   +0.1
@@ -272,7 +305,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handlePacksChange(1)}
-                  disabled={packs >= 5}
+                  disabled={packs >= FLASK_MAX_PACKS}
                   className="py-1.5 text-xs font-bold text-amber-950 bg-amber-200 hover:bg-amber-300 rounded-lg border border-amber-400 disabled:opacity-40 transition-colors"
                 >
                   +1
@@ -319,6 +352,13 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                 </button>
                 <button
                   type="button"
+                  onClick={() => handleAlignToMark(200)}
+                  className="flex-1 py-1.5 text-[11px] font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 rounded-lg border border-emerald-300 transition-colors"
+                >
+                  200mL
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleAlignToMark(500)}
                   className="flex-1 py-1.5 text-[11px] font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 rounded-lg border border-emerald-300 transition-colors"
                 >
@@ -359,6 +399,36 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Add solute by mass (g → mol) */}
+          <div className="flex flex-col gap-1 pt-2 border-t border-slate-200">
+            <span className="text-[11px] font-medium text-amber-800 flex items-center gap-1">
+              <Scale className="w-3 h-3 text-amber-600" />
+              <span>天秤で量った {currentSubstance.formula} を重さ（g）で入れる（1パック ＝ {currentSubstance.molarMass}g）</span>
+            </span>
+            <form onSubmit={handleAddGrams} className="flex gap-1.5 max-w-sm">
+              <div className="relative flex-1">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  inputMode="decimal"
+                  placeholder="例: 1.5"
+                  value={inputGrams}
+                  onChange={(e) => setInputGrams(e.target.value)}
+                  className="w-full py-1.5 px-3 text-xs font-mono font-bold bg-white rounded-lg border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-slate-500"
+                />
+                <span className="absolute right-2.5 top-1.5 text-xs text-slate-400 font-sans pointer-events-none">g</span>
+              </div>
+              <button
+                type="submit"
+                disabled={!inputGrams || packs >= FLASK_MAX_PACKS}
+                className="px-3 py-1.5 text-xs font-bold text-amber-950 bg-amber-200 hover:bg-amber-300 rounded-lg border border-amber-400 disabled:opacity-40 transition-colors"
+              >
+                加える
+              </button>
+            </form>
           </div>
         </div>
       )}

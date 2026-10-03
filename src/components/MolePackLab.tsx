@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SUBSTANCES } from '../data/cards';
-import { calculateMolesToQuantities, calculateMassToMoles } from '../utils/chemistry';
+import { calculateMolesToQuantities } from '../utils/chemistry';
+import { PACK_MAX, packChange, packFromGrams, packSetSubstance } from '../utils/operations';
 import { Package, HelpCircle, ArrowRightLeft, Sparkles } from 'lucide-react';
 
 interface MolePackLabProps {
@@ -31,18 +32,15 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
   const handleSubstanceChange = (id: string) => {
     if (readOnly) return;
     onUpdate({
-      substanceId: id,
-      packs,
+      ...packSetSubstance({ substanceId, packs }, id),
       actionDescription: `物質を ${SUBSTANCES[id].name} (${SUBSTANCES[id].formula}) に変更`,
     });
   };
 
   const handlePacksChange = (delta: number) => {
     if (readOnly) return;
-    const nextPacks = Math.max(0, Math.min(10, Math.round((packs + delta) * 10) / 10));
     onUpdate({
-      substanceId,
-      packs: nextPacks,
+      ...packChange({ substanceId, packs }, delta),
       actionDescription: `パック数 ${delta > 0 ? `+${delta}` : delta}mol`,
     });
   };
@@ -52,11 +50,10 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
     if (readOnly) return;
     const val = parseFloat(inputGrams);
     if (!isNaN(val) && val >= 0) {
-      const calculatedPacks = calculateMassToMoles(val, substanceId);
+      const next = packFromGrams({ substanceId, packs }, val);
       onUpdate({
-        substanceId,
-        packs: calculatedPacks,
-        actionDescription: `重さ ${val}g から ${calculatedPacks}mol を計算`,
+        ...next,
+        actionDescription: `重さ ${val}g から ${Number(next.packs.toFixed(3))}mol を計算`,
       });
       setInputGrams('');
     }
@@ -64,8 +61,11 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
 
   // Full packs (1.0mol = 1 full crate with 10 units)
   const fullPacksCount = Math.floor(quantities.packs);
-  // Fractional units (0.1mol unit = 1 slot)
-  const fractionalUnits = Math.round((quantities.packs - fullPacksCount) * 10);
+  // 端数のパック（例: 0.17mol → 小分け 1個が満杯 ＋ 2個目が7割）
+  const fractionalPacks = Math.round((quantities.packs - fullPacksCount) * 100) / 100;
+  const fractionalPieces = Math.round(fractionalPacks * 1000) / 100; // 小分けの個数（小数あり）
+  const fractionalUnits = Math.floor(fractionalPieces + 1e-9); // 満杯の小分け
+  const hasPartialUnit = fractionalPieces - fractionalUnits > 1e-9;
 
   const theme = currentSubstance.theme;
 
@@ -216,7 +216,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                 ))}
 
                 {/* Fractional Pack (If partial units exist, e.g. 0.3mol = 3 active slots) */}
-                {fractionalUnits > 0 && (
+                {fractionalPacks > 0 && (
                   <div
                     className="flex flex-col items-center p-2.5 rounded-xl shadow-md border-2 border-dashed transition-all"
                     style={{
@@ -225,9 +225,9 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                     }}
                   >
                     <div className="text-[11px] font-bold mb-1.5 flex items-center gap-1.5 text-white">
-                      <span>📦 {(fractionalUnits * 0.1).toFixed(1)}パック（小分け {fractionalUnits}個）</span>
+                      <span>📦 {fractionalPacks}パック（小分け {fractionalPieces}個分）</span>
                       <span className="text-slate-300 font-normal">
-                        ＝ {(fractionalUnits * 0.1 * currentSubstance.molarMass).toFixed(1)}g
+                        ＝ {((Math.max(0, packs) - fullPacksCount) * currentSubstance.molarMass).toFixed(1)}g
                       </span>
                     </div>
 
@@ -235,17 +235,20 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                     <div className="grid grid-cols-5 gap-1.5 p-1.5 bg-slate-900/90 rounded-lg border border-slate-700/80">
                       {Array.from({ length: 10 }).map((_, slotIdx) => {
                         const isActive = slotIdx < fractionalUnits;
+                        const isPartial = hasPartialUnit && slotIdx === fractionalUnits;
                         return (
                           <div
                             key={`frac-slot-${slotIdx}`}
                             className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${
                               isActive
                                 ? `${theme.activeSlot} shadow-xs scale-102`
+                                : isPartial
+                                ? `${theme.activeSlot} opacity-50 border border-dashed border-white/60`
                                 : 'bg-slate-800/60 border border-slate-700/40 text-slate-600'
                             }`}
-                            title={isActive ? `小分け 0.1mol (${currentSubstance.name})` : '空の枠'}
+                            title={isActive ? `小分け 0.1mol (${currentSubstance.name})` : isPartial ? '小分けの一部（0.1mol 未満）' : '空の枠'}
                           >
-                            {isActive ? (
+                            {isActive || isPartial ? (
                               <span className="text-xs select-none">
                                 {currentSubstance.icon}
                               </span>
@@ -258,7 +261,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                     </div>
 
                     <div className="text-[9px] text-slate-400 mt-1">
-                      10枠中 {fractionalUnits}枠使用（0.{fractionalUnits}パック）
+                      10枠中 {fractionalPieces}枠分（{fractionalPacks}パック）
                     </div>
                   </div>
                 )}
@@ -270,7 +273,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
 
       {/* Synchronized 3-Way Metrics Readout Card */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col gap-3">
-        <div className="flex items-center justify-between text-xs text-slate-500 border-b border-slate-100 pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-slate-500 border-b border-slate-100 pb-2">
           <span className="font-semibold text-slate-700 flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-amber-500" />
             <span>3つの量の同時表示（同じ状態を異なる単位で見比べる）</span>
@@ -310,7 +313,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
           {/* Particle Count */}
           <div className="bg-sky-50/70 border border-sky-200/80 rounded-lg p-3">
             <span className="text-[11px] font-medium text-sky-800 block">
-              粒（分子・イオン）の個数
+              粒の数（{currentSubstance.particleName}）
             </span>
             <div className="mt-1">
               <span className="text-xl font-bold font-mono text-sky-700 tabular-nums">
@@ -382,7 +385,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handlePacksChange(0.1)}
-                  disabled={packs >= 10}
+                  disabled={packs >= PACK_MAX}
                   className="py-2 text-xs font-bold text-slate-900 bg-slate-200 hover:bg-slate-300 active:bg-slate-400 rounded-lg border border-slate-300 disabled:opacity-40 transition-colors"
                 >
                   +0.1
@@ -390,7 +393,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handlePacksChange(1)}
-                  disabled={packs >= 10}
+                  disabled={packs >= PACK_MAX}
                   className="py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-950 rounded-lg border border-slate-900 disabled:opacity-40 transition-colors"
                 >
                   +1
