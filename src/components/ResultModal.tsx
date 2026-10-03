@@ -5,10 +5,11 @@ import { MolePackLab } from './MolePackLab';
 import { MolarFlaskLab } from './MolarFlaskLab';
 import { DiagramTape } from './DiagramTape';
 import { FormulaDisplay } from './FormulaDisplay';
-import { Star, CheckCircle2, RotateCcw, ArrowRight, Home, HelpCircle } from 'lucide-react';
+import { Star, CheckCircle2, RotateCcw, ArrowRight, Home, HelpCircle, Target } from 'lucide-react';
 
 interface ResultModalProps {
   isOpen: boolean;
+  isSuccess: boolean;
   mission: Mission;
   starsEarned: number; // 1 to 3
   isPredictionCorrect: boolean;
@@ -18,6 +19,7 @@ interface ResultModalProps {
   feedbackText: string;
   particleExplanation: string;
   onRetry: () => void;
+  onContinue: () => void;
   onNext: () => void;
   onHome: () => void;
   hasNextMission: boolean;
@@ -25,6 +27,7 @@ interface ResultModalProps {
 
 export const ResultModal: React.FC<ResultModalProps> = ({
   isOpen,
+  isSuccess,
   mission,
   starsEarned,
   isPredictionCorrect,
@@ -34,6 +37,7 @@ export const ResultModal: React.FC<ResultModalProps> = ({
   feedbackText,
   particleExplanation,
   onRetry,
+  onContinue,
   onNext,
   onHome,
   hasNextMission,
@@ -41,6 +45,53 @@ export const ResultModal: React.FC<ResultModalProps> = ({
   const [activeTab, setActiveTab] = useState<ViewMode>('particles');
 
   if (!isOpen) return null;
+
+  // 未達成：正解は明かさず、現在の状態とヒントだけ見せて操作に戻す
+  if (!isSuccess) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-xs animate-fade-in">
+        <div className="bg-white w-full max-w-md rounded-2xl border border-slate-200 shadow-2xl overflow-hidden">
+          <div className="px-5 py-4 bg-linear-to-r from-slate-900 to-slate-950 text-white">
+            <span className="text-[11px] font-semibold text-sky-300 tracking-wider block">
+              まだ目標に届いていません
+            </span>
+            <h2 className="text-base sm:text-lg font-bold mt-0.5">{mission.title}</h2>
+          </div>
+          <div className="p-5 space-y-3 text-xs">
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="text-[11px] text-slate-400 block mb-0.5">確かめた結果:</span>
+              <p className="text-slate-700 font-medium leading-relaxed">{feedbackText}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-sky-50 border border-sky-200 text-sky-900 flex items-start gap-2">
+              <Target className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
+              <span>
+                <strong className="block mb-0.5">現在の目標：</strong>
+                {mission.goalDescription}
+              </span>
+            </div>
+          </div>
+          <div className="px-5 py-4 border-t border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={onRetry}
+              className="px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+              <span>最初からやり直す</span>
+            </button>
+            <button
+              type="button"
+              onClick={onContinue}
+              className="px-5 py-2.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-950 rounded-xl transition-all shadow-md flex items-center gap-2"
+            >
+              <span>操作を続ける</span>
+              <ArrowRight className="w-4 h-4 text-amber-400" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const predictedChoice = mission.choices.find((c) => c.id === predictedChoiceId);
   const correctChoice = mission.choices.find((c) => c.isCorrect);

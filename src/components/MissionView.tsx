@@ -41,6 +41,7 @@ export const MissionView: React.FC<MissionViewProps> = ({
 
   // Evaluation & Result modal state
   const [isResultOpen, setIsResultOpen] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [resultStars, setResultStars] = useState<number>(1);
   const [isPredCorrect, setIsPredCorrect] = useState<boolean>(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string>('');
@@ -77,6 +78,15 @@ export const MissionView: React.FC<MissionViewProps> = ({
 
     // Run chemistry evaluation logic
     const evalResult = mission.checkCompletion(simState, selectedPrediction);
+
+    if (!evalResult.isSuccess) {
+      // 未達成：星も記録も付けず、ヒントだけ出して操作を続けてもらう
+      setIsSuccess(false);
+      setFeedbackMessage(evalResult.feedback);
+      setIsResultOpen(true);
+      return;
+    }
+    setIsSuccess(true);
 
     const chosenChoice = mission.choices.find((c) => c.id === selectedPrediction);
     const isChoiceCorrect = !!chosenChoice?.isCorrect;
@@ -307,6 +317,7 @@ export const MissionView: React.FC<MissionViewProps> = ({
       {/* Result Modal */}
       <ResultModal
         isOpen={isResultOpen}
+        isSuccess={isSuccess}
         mission={mission}
         starsEarned={resultStars}
         isPredictionCorrect={isPredCorrect}
@@ -316,6 +327,7 @@ export const MissionView: React.FC<MissionViewProps> = ({
         feedbackText={feedbackMessage}
         particleExplanation={particleExplain}
         onRetry={handleRetry}
+        onContinue={() => setIsResultOpen(false)}
         onNext={() => {
           setIsResultOpen(false);
           if (onNextMission) onNextMission();
