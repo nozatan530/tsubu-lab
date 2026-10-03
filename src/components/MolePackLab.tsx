@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SUBSTANCES } from '../data/cards';
-import { calculateMolesToQuantities, calculateMassToMoles } from '../utils/chemistry';
+import { calculateMolesToQuantities } from '../utils/chemistry';
+import { PACK_MAX, packChange, packFromGrams, packSetSubstance } from '../utils/operations';
 import { Package, HelpCircle, ArrowRightLeft, Sparkles } from 'lucide-react';
 
 interface MolePackLabProps {
@@ -31,18 +32,15 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
   const handleSubstanceChange = (id: string) => {
     if (readOnly) return;
     onUpdate({
-      substanceId: id,
-      packs,
+      ...packSetSubstance({ substanceId, packs }, id),
       actionDescription: `物質を ${SUBSTANCES[id].name} (${SUBSTANCES[id].formula}) に変更`,
     });
   };
 
   const handlePacksChange = (delta: number) => {
     if (readOnly) return;
-    const nextPacks = Math.max(0, Math.min(10, Math.round((packs + delta) * 100) / 100));
     onUpdate({
-      substanceId,
-      packs: nextPacks,
+      ...packChange({ substanceId, packs }, delta),
       actionDescription: `パック数 ${delta > 0 ? `+${delta}` : delta}mol`,
     });
   };
@@ -52,11 +50,10 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
     if (readOnly) return;
     const val = parseFloat(inputGrams);
     if (!isNaN(val) && val >= 0) {
-      const calculatedPacks = calculateMassToMoles(val, substanceId);
+      const next = packFromGrams({ substanceId, packs }, val);
       onUpdate({
-        substanceId,
-        packs: calculatedPacks,
-        actionDescription: `重さ ${val}g から ${Number(calculatedPacks.toFixed(3))}mol を計算`,
+        ...next,
+        actionDescription: `重さ ${val}g から ${Number(next.packs.toFixed(3))}mol を計算`,
       });
       setInputGrams('');
     }
@@ -388,7 +385,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handlePacksChange(0.1)}
-                  disabled={packs >= 10}
+                  disabled={packs >= PACK_MAX}
                   className="py-2 text-xs font-bold text-slate-900 bg-slate-200 hover:bg-slate-300 active:bg-slate-400 rounded-lg border border-slate-300 disabled:opacity-40 transition-colors"
                 >
                   +0.1
@@ -396,7 +393,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handlePacksChange(1)}
-                  disabled={packs >= 10}
+                  disabled={packs >= PACK_MAX}
                   className="py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-950 rounded-lg border border-slate-900 disabled:opacity-40 transition-colors"
                 >
                   +1

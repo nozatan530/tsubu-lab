@@ -1,5 +1,14 @@
 import React, { useMemo } from 'react';
 import { calculateMassPercent } from '../utils/chemistry';
+import {
+  BeakerState,
+  BEAKER_INITIAL,
+  BEAKER_MAX_SOLUTE_G,
+  beakerAddSolute,
+  beakerAddWater,
+  beakerMerge,
+  beakerSplit,
+} from '../utils/operations';
 import { Plus, Split, Combine, RotateCcw } from 'lucide-react';
 
 interface ParticleBeakerProps {
@@ -79,69 +88,34 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
   }, [secondBeaker]);
 
   // Operations
+  const state: BeakerState = { soluteG, waterG, secondBeaker };
+
   const handleAddSolute = (amount: number) => {
     if (readOnly) return;
-    const nextSolute = Math.min(50, soluteG + amount);
-    onUpdate({
-      soluteG: nextSolute,
-      waterG,
-      secondBeaker,
-      actionDescription: `溶質（食塩）+${amount}g`,
-    });
+    onUpdate({ ...beakerAddSolute(state, amount), actionDescription: `溶質（食塩）+${amount}g` });
   };
 
   const handleAddWater = (amount: number) => {
     if (readOnly) return;
-    const nextWater = Math.min(260, waterG + amount);
-    onUpdate({
-      soluteG,
-      waterG: nextWater,
-      secondBeaker,
-      actionDescription: `水 +${amount}g`,
-    });
+    onUpdate({ ...beakerAddWater(state, amount), actionDescription: `水 +${amount}g` });
   };
 
   const handleSplit = (fraction: number) => {
     if (readOnly) return;
-    // 丸めずに同じ割合で分ける（整数に丸めると2つのビーカーの濃度がずれる）
-    const splitSolute = soluteG * fraction;
-    const splitWater = waterG * fraction;
-
-    const remainingSolute = soluteG - splitSolute;
-    const remainingWater = waterG - splitWater;
-
-    const currentSecondSolute = secondBeaker?.soluteG || 0;
-    const currentSecondWater = secondBeaker?.waterG || 0;
-
     onUpdate({
-      soluteG: remainingSolute,
-      waterG: remainingWater,
-      secondBeaker: {
-        soluteG: currentSecondSolute + splitSolute,
-        waterG: currentSecondWater + splitWater,
-      },
+      ...beakerSplit(state, fraction),
       actionDescription: fraction === 0.5 ? '半分くみ出す' : '1/4くみ出す',
     });
   };
 
   const handleMerge = () => {
     if (readOnly || !secondBeaker) return;
-    onUpdate({
-      soluteG: soluteG + secondBeaker.soluteG,
-      waterG: waterG + secondBeaker.waterG,
-      secondBeaker: undefined,
-      actionDescription: '2つのビーカーを混ぜる',
-    });
+    onUpdate({ ...beakerMerge(state), actionDescription: '2つのビーカーを混ぜる' });
   };
 
   const handleReset = () => {
     if (readOnly) return;
-    onUpdate({
-      soluteG: 10,
-      waterG: 90,
-      secondBeaker: undefined,
-      actionDescription: '初期状態（10% 100g）にリセット',
-    });
+    onUpdate({ ...BEAKER_INITIAL, actionDescription: '初期状態（10% 100g）にリセット' });
   };
 
   return (
@@ -352,7 +326,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                 <button
                   type="button"
                   onClick={() => handleAddSolute(1)}
-                  disabled={soluteG >= 50}
+                  disabled={soluteG >= BEAKER_MAX_SOLUTE_G}
                   className="flex-1 py-2 text-xs font-bold text-orange-800 bg-orange-100 hover:bg-orange-200 active:bg-orange-300 rounded-lg transition-colors border border-orange-300/80 disabled:opacity-50"
                 >
                   +1g
@@ -360,7 +334,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                 <button
                   type="button"
                   onClick={() => handleAddSolute(5)}
-                  disabled={soluteG >= 50}
+                  disabled={soluteG >= BEAKER_MAX_SOLUTE_G}
                   className="flex-1 py-2 text-xs font-bold text-orange-900 bg-orange-200 hover:bg-orange-300 active:bg-orange-400 rounded-lg transition-colors border border-orange-300 disabled:opacity-50"
                 >
                   +5g

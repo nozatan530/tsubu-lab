@@ -8,6 +8,7 @@ import { FormulaDisplay } from './FormulaDisplay';
 import { ScaleLegend } from './ScaleLegend';
 import { ViewSwitcher } from './ViewSwitcher';
 import { ResultModal } from './ResultModal';
+import { flaskFromMissionState, toMissionUpdates } from '../utils/operations';
 import { CheckCircle, Lock, RotateCcw, ArrowRight, BookOpen, HelpCircle, ChevronLeft } from 'lucide-react';
 
 interface MissionViewProps {
@@ -59,17 +60,9 @@ export const MissionView: React.FC<MissionViewProps> = ({
   const handleUpdateSim = (updates: any) => {
     // If prediction not made yet, ignore changes
     if (!selectedPrediction) return;
-    if (mission.unitId === 'unit3' || mission.unitId === 'comprehensive') {
-      // MolarFlaskLab は packs / waterML / substanceId で返すので、ミッションの状態（flask*）に対応づける
-      const { packs, waterML, substanceId, ...rest } = updates;
-      updates = {
-        ...rest,
-        ...(packs !== undefined && { flaskPacks: packs }),
-        ...(waterML !== undefined && { flaskWaterML: waterML }),
-        ...(substanceId !== undefined && { flaskSubstanceId: substanceId }),
-      };
-    }
-    setSimState((prev: any) => ({ ...prev, ...updates }));
+    // MolarFlaskLab は packs / waterML / substanceId で返すので、ミッションの状態（flask*）に対応づける
+    const missionUpdates = toMissionUpdates(mission.unitId, updates);
+    setSimState((prev: any) => ({ ...prev, ...missionUpdates }));
     setMovesCount((prev) => prev + 1);
   };
 
@@ -266,9 +259,7 @@ export const MissionView: React.FC<MissionViewProps> = ({
 
               {(mission.unitId === 'unit3' || mission.unitId === 'comprehensive') && (
                 <MolarFlaskLab
-                  substanceId={simState.flaskSubstanceId || simState.substanceId || 'NaCl'}
-                  packs={simState.flaskPacks ?? simState.packs ?? 0.1}
-                  waterML={simState.flaskWaterML ?? simState.waterML ?? 900}
+                  {...flaskFromMissionState(simState)}
                   onUpdate={handleUpdateSim}
                   readOnly={isControlsLocked}
                 />

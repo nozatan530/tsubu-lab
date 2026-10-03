@@ -40,7 +40,7 @@ export const MISSIONS: Mission[] = [
     ],
     checkCompletion: (state, predictionChoiceId) => {
       // Completed if user divided the beaker
-      const hasDivided = state.secondBeaker && state.secondBeaker.waterG > 0;
+      const hasDivided = !!state.secondBeaker && state.secondBeaker.waterG > 0;
       const beakerAPercent = calculateMassPercent(state.soluteG, state.waterG).percent;
       const isSuccess = hasDivided;
 

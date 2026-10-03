@@ -5,6 +5,7 @@ import { MolePackLab } from './MolePackLab';
 import { MolarFlaskLab } from './MolarFlaskLab';
 import { DiagramTape } from './DiagramTape';
 import { FormulaDisplay } from './FormulaDisplay';
+import { flaskFromMissionState } from '../utils/operations';
 import { Star, CheckCircle2, RotateCcw, ArrowRight, Home, HelpCircle, Target } from 'lucide-react';
 
 interface ResultModalProps {
@@ -271,9 +272,7 @@ export const ResultModal: React.FC<ResultModalProps> = ({
                   )}
                   {(mission.unitId === 'unit3' || mission.unitId === 'comprehensive') && (
                     <MolarFlaskLab
-                      substanceId={finalState.flaskSubstanceId || finalState.substanceId || 'NaCl'}
-                      packs={finalState.flaskPacks ?? finalState.packs ?? 0.1}
-                      waterML={finalState.flaskWaterML ?? finalState.waterML ?? 900}
+                      {...flaskFromMissionState(finalState)}
                       onUpdate={() => {}}
                       readOnly={true}
                     />

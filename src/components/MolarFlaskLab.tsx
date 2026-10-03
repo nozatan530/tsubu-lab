@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { SUBSTANCES } from '../data/cards';
-import { calculateMolarConcentration, calculateMassToMoles } from '../utils/chemistry';
+import { calculateMolarConcentration } from '../utils/chemistry';
+import {
+  FlaskState,
+  FLASK_MAX_PACKS,
+  flaskAddGrams,
+  flaskAlignToMark,
+  flaskChangePacks,
+  flaskChangeWater,
+  flaskTakeOut,
+} from '../utils/operations';
 import { Beaker, Droplets, Target, Split, AlertCircle, Sparkles, Scale } from 'lucide-react';
 
 interface MolarFlaskLabProps {
@@ -32,24 +41,16 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
   const [selectedMark, setSelectedMark] = useState<number>(1000); // 100, 200, 500, or 1000 mL
   const [inputGrams, setInputGrams] = useState<string>('');
 
+  const state: FlaskState = { substanceId, packs, waterML };
+
   const handlePacksChange = (delta: number) => {
     if (readOnly) return;
-    const nextPacks = Math.max(0, Math.min(5, Math.round((packs + delta) * 100) / 100));
-    onUpdate({
-      packs: nextPacks,
-      waterML,
-      actionDescription: `パック ${delta > 0 ? `+${delta}` : delta}mol`,
-    });
+    onUpdate({ ...flaskChangePacks(state, delta), actionDescription: `パック ${delta > 0 ? `+${delta}` : delta}mol` });
   };
 
   const handleWaterChange = (delta: number) => {
     if (readOnly) return;
-    const nextWater = Math.max(0, Math.min(1200, waterML + delta));
-    onUpdate({
-      packs,
-      waterML: nextWater,
-      actionDescription: `水 ${delta > 0 ? `+${delta}` : delta}mL`,
-    });
+    onUpdate({ ...flaskChangeWater(state, delta), actionDescription: `水 ${delta > 0 ? `+${delta}` : delta}mL` });
   };
 
   // 天秤で量った溶質（g）をフラスコに加える（g → mol の換算）
@@ -58,12 +59,10 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
     if (readOnly) return;
     const grams = parseFloat(inputGrams);
     if (isNaN(grams) || grams <= 0) return;
-    const addedPacks = calculateMassToMoles(grams, substanceId);
-    const nextPacks = Math.min(5, packs + addedPacks);
+    const next = flaskAddGrams(state, grams);
     onUpdate({
-      packs: nextPacks,
-      waterML,
-      actionDescription: `${currentSubstance.formula} ${grams}g（${Number(addedPacks.toFixed(3))}mol）を加える`,
+      ...next,
+      actionDescription: `${currentSubstance.formula} ${grams}g（${Number((next.packs - packs).toFixed(3))}mol）を加える`,
     });
     setInputGrams('');
   };
@@ -71,39 +70,12 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
   const handleAlignToMark = (targetML: number) => {
     if (readOnly) return;
     setSelectedMark(targetML);
-    // Solute expands volume: water + soluteContribution = targetML
-    // Therefore waterML = Math.max(0, targetML - soluteContribution)
-    const soluteVol = packs * currentSubstance.volumePerMolML;
-    const targetWater = Math.max(0, targetML - soluteVol);
-    onUpdate({
-      packs,
-      waterML: targetWater,
-      actionDescription: `標線 ${targetML}mL まで水を合わせる`,
-    });
+    onUpdate({ ...flaskAlignToMark(state, targetML), actionDescription: `標線 ${targetML}mL まで水を合わせる` });
   };
 
   const handleTakeOut = (type: 'half' | '100ml') => {
     if (readOnly || calc.solutionVolumeML <= 0) return;
-    if (type === 'half') {
-      // 溶質も水も同じ割合で減らす（丸めると濃度がずれる）
-      const nextPacks = packs * 0.5;
-      const nextWater = waterML * 0.5;
-      onUpdate({
-        packs: nextPacks,
-        waterML: nextWater,
-        actionDescription: '半分くみ出す',
-      });
-    } else {
-      const ratio = 100 / calc.solutionVolumeML;
-      if (ratio >= 1) return;
-      const nextPacks = Math.max(0, packs * (1 - ratio));
-      const nextWater = Math.max(0, waterML * (1 - ratio));
-      onUpdate({
-        packs: nextPacks,
-        waterML: nextWater,
-        actionDescription: '100mLくみ出す',
-      });
-    }
+    onUpdate({ ...flaskTakeOut(state, type), actionDescription: type === 'half' ? '半分くみ出す' : '100mLくみ出す' });
   };
 
   // Percentage height for the flask (max 1200mL scale)
@@ -292,7 +264,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handlePacksChange(0.1)}
-                  disabled={packs >= 5}
+                  disabled={packs >= FLASK_MAX_PACKS}
                   className="py-1.5 text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-300 disabled:opacity-40 transition-colors"
                 >
                   +0.1
@@ -300,7 +272,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handlePacksChange(1)}
-                  disabled={packs >= 5}
+                  disabled={packs >= FLASK_MAX_PACKS}
                   className="py-1.5 text-xs font-bold text-amber-950 bg-amber-200 hover:bg-amber-300 rounded-lg border border-amber-400 disabled:opacity-40 transition-colors"
                 >
                   +1
@@ -418,7 +390,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
               </div>
               <button
                 type="submit"
-                disabled={!inputGrams || packs >= 5}
+                disabled={!inputGrams || packs >= FLASK_MAX_PACKS}
                 className="px-3 py-1.5 text-xs font-bold text-amber-950 bg-amber-200 hover:bg-amber-300 rounded-lg border border-amber-400 disabled:opacity-40 transition-colors"
               >
                 加える
