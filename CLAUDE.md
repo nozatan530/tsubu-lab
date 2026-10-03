@@ -38,14 +38,15 @@
   - 実験室のボタン操作は `src/utils/operations.ts` にまとめてあり、画面とチェックの両方がここを使う
 - ビルド: `npm run build`（出力は `dist/`）
 - CI: プッシュ（main）とプルリクエストのたびに GitHub Actions（`.github/workflows/check.yml`）が lint・check・build を実行する
+- 公開: `main` への push で `.github/workflows/deploy-pages.yml` が GitHub Pages に公開する
 
 ## 技術スタック
 
 Vite + React 19 + TypeScript + Tailwind CSS v4。アイコンは lucide-react、アニメーションは motion。
 AI Studio Build で試作（通常ルート：AI機能なし）。保存は localStorage のみ、サーバーなしの静的アプリ。
-GitHub リポジトリ名は `nozatan530/TubuLab`（ローカルのフォルダ名は `tsubu-lab`）。
+GitHub リポジトリは `nozatan530/tsubu-lab`。
+公開先：GitHub Pages（https://nozatan530.github.io/tsubu-lab/）。`main` に push（マージ）すると `.github/workflows/deploy-pages.yml` がチェック・ビルドして自動で公開する。`vite.config.ts` は `base: './'`（相対パス）なので、リポジトリ名が変わっても設定し直さなくてよい。
 
 AI Studio の雛形から残っている不要物（仕上げで整理する候補）：
 - `@google/genai` `express` `dotenv`（コードからは使っていない）
 - `.env.example` の `GEMINI_API_KEY` / `APP_URL`、`metadata.json` の `MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API`
-- GitHub Pages で公開する場合は `vite.config.ts` に `base: '/TubuLab/'` が必要
