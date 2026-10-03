@@ -369,13 +369,16 @@ export const MISSIONS: Mission[] = [
       },
     ],
     checkCompletion: (state) => {
-      const q = calculateMolesToQuantities(state.packs, 'H2O');
-      const isSuccess = Math.abs(q.packs - 2.0) < 0.05;
+      const q = calculateMolesToQuantities(state.packs, state.substanceId);
+      const isH2O = state.substanceId === 'H2O';
+      const isSuccess = isH2O && Math.abs(q.packs - 2.0) < 0.05;
       return {
         isSuccess,
         feedback: isSuccess
           ? `36.0g ÷ 18.0g/mol ＝ 2.0パック（2.0mol）！ 粒の個数は ${q.formattedParticles} です！`
-          : `現在: ${q.massG}g（${q.packs}mol）。36gに合わせてみよう！`,
+          : isH2O
+          ? `現在: ${q.massG}g（${q.packs}mol）。36gに合わせてみよう！`
+          : `いまは H₂O 以外が選ばれています。物質を H₂O（水）に戻して、36gに合わせてみよう！`,
         particleExplanation: '全体の重さ(36g)を1パックの重さ(18g)で割ると、パック数(2)が出ます。個数は 6.02×10²³個 が2パック分あるので 1.20×10²⁴個 です。',
       };
     },
