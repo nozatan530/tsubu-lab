@@ -104,7 +104,8 @@ export const MISSIONS: Mission[] = [
     subtitle: '目標の質量と濃度になるよう、溶質と水を操作しよう',
     question: '5%の食塩水 200g を作るには、食塩（溶質）は何g 必要でしょう？',
     goalDescription: '食塩と水を足して、「溶液200g・濃度5.0%」をビーカーに作ろう！',
-    targetMoves: 6,
+    // 最短手数：食塩 +5g×2、水 +50g×3 と +10g×4（= 10g + 190g）
+    targetMoves: 9,
     initialState: {
       soluteG: 0,
       waterG: 0,
