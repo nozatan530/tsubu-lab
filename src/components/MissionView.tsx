@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Mission, ViewMode, UnitId } from '../types';
 import { ParticleBeaker } from './ParticleBeaker';
 import { MolePackLab } from './MolePackLab';
@@ -307,27 +308,30 @@ export const MissionView: React.FC<MissionViewProps> = ({
         </div>
       </div>
 
-      {/* Result Modal */}
-      <ResultModal
-        isOpen={isResultOpen}
-        isSuccess={isSuccess}
-        mission={mission}
-        starsEarned={resultStars}
-        isPredictionCorrect={isPredCorrect}
-        predictedChoiceId={selectedPrediction}
-        movesUsed={movesCount}
-        finalState={simState}
-        feedbackText={feedbackMessage}
-        particleExplanation={particleExplain}
-        onRetry={handleRetry}
-        onContinue={() => setIsResultOpen(false)}
-        onNext={() => {
-          setIsResultOpen(false);
-          if (onNextMission) onNextMission();
-        }}
-        onHome={onBackToMap}
-        hasNextMission={!!onNextMission}
-      />
+      {/* Result Modal：親の animate-fade-in（transform）の影響で fixed が画面からずれないよう、body 直下に出す */}
+      {createPortal(
+        <ResultModal
+          isOpen={isResultOpen}
+          isSuccess={isSuccess}
+          mission={mission}
+          starsEarned={resultStars}
+          isPredictionCorrect={isPredCorrect}
+          predictedChoiceId={selectedPrediction}
+          movesUsed={movesCount}
+          finalState={simState}
+          feedbackText={feedbackMessage}
+          particleExplanation={particleExplain}
+          onRetry={handleRetry}
+          onContinue={() => setIsResultOpen(false)}
+          onNext={() => {
+            setIsResultOpen(false);
+            if (onNextMission) onNextMission();
+          }}
+          onHome={onBackToMap}
+          hasNextMission={!!onNextMission}
+        />,
+        document.body
+      )}
     </div>
   );
 };
