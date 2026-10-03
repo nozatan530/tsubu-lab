@@ -225,7 +225,7 @@ export const FormulaDisplay: React.FC<FormulaDisplayProps> = ({ unitId, state })
       <div className="p-3 bg-purple-50/70 border border-purple-200/80 rounded-xl text-xs text-purple-900 leading-relaxed">
         <strong>「モル濃度」という名前の言い換え：</strong>
         <p className="text-[11px] text-purple-800 mt-1">
-          教科書では難しそうに見えますが、意味はシンプルに<strong>「溶液1Lあたり何パック溶けているか」</strong>という混み具合（密度）のことです。
+          教科書では難しそうに見えますが、意味はシンプルに<strong>「溶液1Lあたり何パック溶けているか」</strong>という混み具合（濃さ）のことです。
         </p>
       </div>
     </div>

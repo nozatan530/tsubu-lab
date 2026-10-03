@@ -29,7 +29,7 @@ export const MISSIONS: Mission[] = [
         id: 'c2',
         label: '10% のまま変わらない',
         isCorrect: true,
-        explanation: '大正解！取り分けても、水に対する粒の混み具合（密度）はどちらも全く同じです。',
+        explanation: '大正解！取り分けても、溶液全体に対する粒の混み具合（割合）はどちらも全く同じです。',
       },
       {
         id: 'c3',
@@ -510,7 +510,7 @@ export const MISSIONS: Mission[] = [
         id: 'c3',
         label: '1.0mol/L より少し大きく（濃く）なる',
         isCorrect: false,
-        explanation: '体積が増えると、同じパック数でも密度は薄くなります。',
+        explanation: '体積が増えると、同じパック数でも1Lあたりの混み具合は小さく（薄く）なります。',
       },
     ],
     checkCompletion: (state) => {
@@ -732,7 +732,7 @@ export const MISSIONS: Mission[] = [
         id: 'c1',
         label: '0.10mol/L',
         isCorrect: false,
-        explanation: '0.10mol ですが、体積が 1.0L ではなく 0.20L（200mL）なのでもっと高密度です。',
+        explanation: '0.10mol ですが、体積が 1.0L ではなく 0.20L（200mL）なので、1Lあたりではもっと濃くなります。',
       },
       {
         id: 'c2',

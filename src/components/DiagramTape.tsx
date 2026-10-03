@@ -243,7 +243,7 @@ export const DiagramTape: React.FC<DiagramTapeProps> = ({ unitId, state }) => {
           <span>図（1L換算図）：溶液1Lの中にパックがいくつあるか</span>
         </h3>
         <p className="text-xs text-slate-500 mt-0.5">
-          モル濃度は「溶液1L（1000mL）あたり何パック（mol）あるか」という割合（密度）です。
+          モル濃度は「溶液1L（1000mL）あたり何パック（mol）あるか」という割合（混み具合）です。
         </p>
       </div>
 
@@ -286,7 +286,7 @@ export const DiagramTape: React.FC<DiagramTapeProps> = ({ unitId, state }) => {
 
       <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 leading-relaxed">
         💡 <strong>ポイント：</strong> 水を足して体積を大きくすると、パックが広い空間に散らばるのでモル濃度は下がります。
-        逆に一部を取り出しても（くみ出し）、1Lあたりの密度は変わらないためモル濃度は同じです。
+        逆に一部を取り出しても（くみ出し）、1Lあたりの混み具合は変わらないためモル濃度は同じです。
       </div>
     </div>
   );
