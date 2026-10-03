@@ -28,6 +28,8 @@ export interface Substance {
   volumePerMolML: number; // Volume contribution when dissolved, e.g. 20mL for NaCl
   singleParticleMass: string; // e.g. "約 3.0 × 10⁻²³ g (0.000...03g)"
   singleParticleRelative: string; // e.g. "H(1)×2 + O(16) = 18"
+  particleName: string; // 何を1粒と数えるか（例: "水分子"、NaCl は "NaCl の組（Na⁺1個＋Cl⁻1個）"）
+  particleCounter: '個' | '組'; // 数え方の単位（イオンからなる物質は「組」）
 }
 
 export interface MissionChoice {

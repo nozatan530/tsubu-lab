@@ -316,7 +316,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
           {/* Particle Count */}
           <div className="bg-sky-50/70 border border-sky-200/80 rounded-lg p-3">
             <span className="text-[11px] font-medium text-sky-800 block">
-              粒（分子・イオン）の個数
+              粒の数（{currentSubstance.particleName}）
             </span>
             <div className="mt-1">
               <span className="text-xl font-bold font-mono text-sky-700 tabular-nums">

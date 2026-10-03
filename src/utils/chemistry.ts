@@ -49,7 +49,7 @@ export function calculateMolesToQuantities(packs: number, substanceId: string): 
   molarMass: number; // g/mol (1パックの重さ)
   massG: number; // g (重さ)
   particleCountTen23: number; // x 10^23 個
-  formattedParticles: string; // e.g. "6.02 × 10²³" or "1.20 × 10²⁴"
+  formattedParticles: string; // e.g. "6.02 × 10²³ 個"（NaCl は「組」）
   pieces: number; // 0.1パック単位 (0.1mol = 1 piece)。0.17mol なら 1.7
 } {
   const substance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
@@ -59,12 +59,13 @@ export function calculateMolesToQuantities(packs: number, substanceId: string): 
   const rawParticles = safePacks * AVOGADRO;
   
   let formattedParticles: string;
+  const counter = substance.particleCounter;
   if (safePacks === 0) {
-    formattedParticles = '0 個';
+    formattedParticles = `0 ${counter}`;
   } else if (rawParticles >= 10) {
-    formattedParticles = `${(rawParticles / 10).toFixed(2)} × 10²⁴ 個`;
+    formattedParticles = `${(rawParticles / 10).toFixed(2)} × 10²⁴ ${counter}`;
   } else {
-    formattedParticles = `${rawParticles.toFixed(2)} × 10²³ 個`;
+    formattedParticles = `${rawParticles.toFixed(2)} × 10²³ ${counter}`;
   }
 
   return {

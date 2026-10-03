@@ -25,6 +25,8 @@ export const SUBSTANCES: Record<string, Substance> = {
     volumePerMolML: 18.0,
     singleParticleMass: '約 3.0 × 10⁻²³ g',
     singleParticleRelative: '水分子1個（相対質量 18）',
+    particleName: '水分子',
+    particleCounter: '個',
   },
   O2: {
     id: 'O2',
@@ -47,9 +49,11 @@ export const SUBSTANCES: Record<string, Substance> = {
       activeSlot: 'bg-linear-to-br from-rose-400 to-red-600',
       particleSymbol: '🫧',
     },
-    volumePerMolML: 22.4,
+    volumePerMolML: 32.0, // 水に溶けたときの体積の目安（気体のモル体積 22.4L/mol とは別物）
     singleParticleMass: '約 5.3 × 10⁻²³ g',
     singleParticleRelative: '酸素分子1個（相対質量 32）',
+    particleName: '酸素分子',
+    particleCounter: '個',
   },
   CO2: {
     id: 'CO2',
@@ -72,9 +76,11 @@ export const SUBSTANCES: Record<string, Substance> = {
       activeSlot: 'bg-linear-to-br from-slate-400 to-slate-600',
       particleSymbol: '🌫️',
     },
-    volumePerMolML: 22.4,
+    volumePerMolML: 34.0, // 水に溶けたときの体積の目安（気体のモル体積 22.4L/mol とは別物）
     singleParticleMass: '約 7.3 × 10⁻²³ g',
     singleParticleRelative: '二酸化炭素分子1個（相対質量 44）',
+    particleName: '二酸化炭素分子',
+    particleCounter: '個',
   },
   NaCl: {
     id: 'NaCl',
@@ -83,7 +89,7 @@ export const SUBSTANCES: Record<string, Substance> = {
     displayFormula: 'NaCl',
     molarMass: 58.5,
     breakdown: 'Na (23.0) + Cl (35.5) = 58.5',
-    description: '代表的な電解質（塩の結晶）。1パック（6.02×10²³組のイオン）の重さは 58.5g です。',
+    description: '代表的な電解質（イオンの結晶）。Na⁺ と Cl⁻ が1個ずつで1組と数え、1パック（6.02×10²³組）の重さは 58.5g です。',
     color: '#ea580c', // Orange
     icon: '🧂',
     theme: {
@@ -99,7 +105,9 @@ export const SUBSTANCES: Record<string, Substance> = {
     },
     volumePerMolML: 20.0, // NaCl 1 mol adds ~20mL when dissolved in water
     singleParticleMass: '約 9.7 × 10⁻²³ g',
-    singleParticleRelative: 'NaCl組1組（相対質量 58.5）',
+    singleParticleRelative: 'NaCl 1組（Na⁺1個＋Cl⁻1個、式量 58.5）',
+    particleName: 'NaCl の組（Na⁺1個＋Cl⁻1個）',
+    particleCounter: '組',
   },
   C6H12O6: {
     id: 'C6H12O6',
@@ -125,6 +133,8 @@ export const SUBSTANCES: Record<string, Substance> = {
     volumePerMolML: 110.0,
     singleParticleMass: '約 3.0 × 10⁻²² g',
     singleParticleRelative: 'グルコース分子1個（相対質量 180）',
+    particleName: 'グルコース分子',
+    particleCounter: '個',
   },
 };
 
