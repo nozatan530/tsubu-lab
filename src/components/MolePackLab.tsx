@@ -276,7 +276,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
 
       {/* Synchronized 3-Way Metrics Readout Card */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col gap-3">
-        <div className="flex items-center justify-between text-xs text-slate-500 border-b border-slate-100 pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-slate-500 border-b border-slate-100 pb-2">
           <span className="font-semibold text-slate-700 flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-amber-500" />
             <span>3つの量の同時表示（同じ状態を異なる単位で見比べる）</span>

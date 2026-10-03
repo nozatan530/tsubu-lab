@@ -212,7 +212,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
 
       {/* Metrics Readout Box */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col gap-3">
-        <div className="flex items-center justify-between text-xs text-slate-500 border-b border-slate-100 pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-slate-500 border-b border-slate-100 pb-2">
           <span className="font-semibold text-slate-700 flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-purple-600" />
             <span>モル濃度表示（溶液1Lあたり何パックあるか）</span>
