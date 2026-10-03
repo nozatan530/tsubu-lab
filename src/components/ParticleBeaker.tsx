@@ -25,6 +25,8 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
   const calcA = calculateMassPercent(soluteG, waterG);
   const calcB = secondBeaker ? calculateMassPercent(secondBeaker.soluteG, secondBeaker.waterG) : null;
   const hasSecond = secondBeaker && secondBeaker.waterG + secondBeaker.soluteG > 0;
+  // 同じ濃度なら「くみ出した分」、違えば別の食塩水として扱う（混ぜる前の2つの液など）
+  const isSameConcentration = !!calcB && Math.abs(calcA.percent - calcB.percent) < 0.05;
 
   // Generate deterministic particle coordinates inside the liquid area for Beaker A
   const particlesA = useMemo(() => {
@@ -202,7 +204,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
           {hasSecond && (
             <div className="flex flex-col items-center justify-center text-slate-400 gap-1">
               <Split className="w-5 h-5 text-amber-400 rotate-90 md:rotate-0" />
-              <span className="text-[11px] font-sans text-amber-200">分けた</span>
+              <span className="text-[11px] font-sans text-amber-200">{isSameConcentration ? '分けた' : '別の液'}</span>
             </div>
           )}
 
@@ -211,7 +213,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
             <div className="flex flex-col items-center animate-fade-in">
               <span className="text-xs font-semibold text-amber-300 mb-1.5 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                ビーカー B（くみ出した分）
+                {isSameConcentration ? 'ビーカー B（くみ出した分）' : 'ビーカー B'}
               </span>
               <div className="relative w-44 h-56 sm:w-48 sm:h-60 bg-slate-900/60 rounded-b-2xl border-x-4 border-b-4 border-amber-400/40 shadow-inner flex flex-col justify-end p-2 overflow-hidden">
                 <div className="absolute left-1 top-4 bottom-4 flex flex-col justify-between text-[9px] font-mono text-slate-500 select-none pointer-events-none">
@@ -261,7 +263,15 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
         {/* Crowding insight banner when partitioned */}
         {hasSecond && (
           <div className="mt-4 p-2.5 bg-amber-950/60 border border-amber-500/30 rounded-xl text-center text-xs text-amber-200 font-medium">
-            💡 注目！ ビーカーAもBも、粒同士の距離（混み具合）は同じ＝どちらも濃度は <strong className="font-mono text-white underline">{calcA.formattedPercent}%</strong> のまま変わりません！
+            {isSameConcentration ? (
+              <>
+                💡 注目！ ビーカーAもBも、粒同士の距離（混み具合）は同じ＝どちらも濃度は <strong className="font-mono text-white underline">{calcA.formattedPercent}%</strong> のまま変わりません！
+              </>
+            ) : (
+              <>
+                💡 ビーカーA（<strong className="font-mono text-white">{calcA.formattedPercent}%</strong>）とビーカーB（<strong className="font-mono text-white">{calcB!.formattedPercent}%</strong>）は濃さが違います。混ぜると粒の混み具合はどうなるかな？
+              </>
+            )}
           </div>
         )}
       </div>
