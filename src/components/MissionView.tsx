@@ -58,6 +58,16 @@ export const MissionView: React.FC<MissionViewProps> = ({
   const handleUpdateSim = (updates: any) => {
     // If prediction not made yet, ignore changes
     if (!selectedPrediction) return;
+    if (mission.unitId === 'unit3' || mission.unitId === 'comprehensive') {
+      // MolarFlaskLab は packs / waterML / substanceId で返すので、ミッションの状態（flask*）に対応づける
+      const { packs, waterML, substanceId, ...rest } = updates;
+      updates = {
+        ...rest,
+        ...(packs !== undefined && { flaskPacks: packs }),
+        ...(waterML !== undefined && { flaskWaterML: waterML }),
+        ...(substanceId !== undefined && { flaskSubstanceId: substanceId }),
+      };
+    }
     setSimState((prev: any) => ({ ...prev, ...updates }));
     setMovesCount((prev) => prev + 1);
   };

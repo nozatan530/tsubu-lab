@@ -11,6 +11,8 @@ interface DiagramTapeProps {
     substanceId?: string;
     packs?: number;
     flaskWaterML?: number;
+    flaskPacks?: number;
+    flaskSubstanceId?: string;
   };
 }
 
@@ -224,9 +226,9 @@ export const DiagramTape: React.FC<DiagramTapeProps> = ({ unitId, state }) => {
   }
 
   // Unit 3 & Comprehensive
-  const flaskPacks = state.packs ?? 0.1;
+  const flaskPacks = state.flaskPacks ?? state.packs ?? 0.1;
   const flaskWaterML = state.flaskWaterML ?? 900;
-  const substanceId = state.substanceId || 'NaCl';
+  const substanceId = state.flaskSubstanceId || state.substanceId || 'NaCl';
   const substance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
   const calc = calculateMolarConcentration(flaskPacks, flaskWaterML, substanceId);
 

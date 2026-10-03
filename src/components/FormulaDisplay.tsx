@@ -11,6 +11,8 @@ interface FormulaDisplayProps {
     substanceId?: string;
     packs?: number;
     flaskWaterML?: number;
+    flaskPacks?: number;
+    flaskSubstanceId?: string;
   };
 }
 
@@ -174,9 +176,9 @@ export const FormulaDisplay: React.FC<FormulaDisplayProps> = ({ unitId, state })
   }
 
   // Unit 3 & Comprehensive
-  const flaskPacks = state.packs ?? 0.1;
+  const flaskPacks = state.flaskPacks ?? state.packs ?? 0.1;
   const flaskWaterML = state.flaskWaterML ?? 900;
-  const substanceId = state.substanceId || 'NaCl';
+  const substanceId = state.flaskSubstanceId || state.substanceId || 'NaCl';
   const calc = calculateMolarConcentration(flaskPacks, flaskWaterML, substanceId);
 
   return (
