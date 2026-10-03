@@ -81,9 +81,9 @@ export const MISSIONS: Mission[] = [
       },
       {
         id: 'c3',
-        label: '9% （90g ÷ 10g の逆）',
+        label: '90% （90g ÷ 100g × 100）',
         isCorrect: false,
-        explanation: '食塩（溶質）の質量を、溶液全体の質量で割って求めます。',
+        explanation: '90g は水（溶媒）の質量です。割られる数（分子）には、食塩（溶質）の質量 10g を入れます。',
       },
     ],
     checkCompletion: (state, predictionChoiceId) => {
@@ -164,7 +164,7 @@ export const MISSIONS: Mission[] = [
         id: 'c1',
         label: '足し算されて 30% になる',
         isCorrect: false,
-        explanation: '食塩も増えますが、水も増えるので、30%のような激辛にはなりません！',
+        explanation: '食塩は30gに増えますが、溶液全体も200gに増えるので30%にはなりません。（そもそも食塩は20℃で約26%までしか溶けないので、30%の食塩水は作れません）',
       },
       {
         id: 'c2',
@@ -696,7 +696,7 @@ export const MISSIONS: Mission[] = [
       },
       {
         id: 'c3',
-        label: '約 2.93g （0.050mol 分）',
+        label: '約 2.9g （0.050mol 分）',
         isCorrect: true,
         explanation: '大正解！必要なパック数は 0.10mol/L × 0.50L ＝ 0.050mol。重さは 58.5g/mol × 0.050mol ＝ 2.925g ≒ 2.9g です！',
       },
@@ -707,9 +707,9 @@ export const MISSIONS: Mission[] = [
       return {
         isSuccess,
         feedback: isSuccess
-          ? `完璧です！ 必要な NaCl は 0.05mol（約2.93g）。標線 500mL に合わせて 0.10mol/L の食塩水が完成しました！`
+          ? `完璧です！ 必要な NaCl は 0.050mol（約2.9g）。標線 500mL に合わせて 0.10mol/L の食塩水が完成しました！`
           : `現在: パック数 ${state.flaskPacks}mol / 溶液体積 ${calc.solutionVolumeML}mL / 濃度 ${calc.formattedConcentration}mol/L（目標: 0.10mol/L・500mL）`,
-        particleExplanation: 'ステップ①：必要なパック数は 0.10mol/L × 0.5L ＝ 0.05mol。 ステップ②：NaCl 1パックは58.5gなので、0.05パックは 58.5 × 0.05 ＝ 2.925g。このようにモルを仲介役にすることで、実験室で天秤に乗せるグラム（g）が求まります！',
+        particleExplanation: 'ステップ①：必要なパック数は 0.10mol/L × 0.5L ＝ 0.05mol。 ステップ②：NaCl 1パックは58.5gなので、0.05パックは 58.5 × 0.05 ＝ 2.925g ≒ 2.9g。このようにモルを仲介役にすることで、実験室で天秤に乗せるグラム（g）が求まります！',
       };
     },
   },

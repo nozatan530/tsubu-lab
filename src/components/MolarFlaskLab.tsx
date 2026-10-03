@@ -406,7 +406,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                   step="any"
                   min="0"
                   inputMode="decimal"
-                  placeholder="例: 2.93"
+                  placeholder="例: 1.5"
                   value={inputGrams}
                   onChange={(e) => setInputGrams(e.target.value)}
                   className="w-full py-1.5 px-3 text-xs font-mono font-bold bg-white rounded-lg border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-slate-500"
