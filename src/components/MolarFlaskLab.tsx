@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SUBSTANCES } from '../data/cards';
-import { calculateMolarConcentration } from '../utils/chemistry';
-import { Beaker, Droplets, Target, Split, AlertCircle, Sparkles } from 'lucide-react';
+import { calculateMolarConcentration, calculateMassToMoles } from '../utils/chemistry';
+import { Beaker, Droplets, Target, Split, AlertCircle, Sparkles, Scale } from 'lucide-react';
 
 interface MolarFlaskLabProps {
   substanceId: string;
@@ -26,10 +26,11 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
   const currentSubstance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
   const calc = calculateMolarConcentration(packs, waterML, substanceId);
   const [selectedMark, setSelectedMark] = useState<number>(1000); // 100, 500, or 1000 mL
+  const [inputGrams, setInputGrams] = useState<string>('');
 
   const handlePacksChange = (delta: number) => {
     if (readOnly) return;
-    const nextPacks = Math.max(0, Math.min(5, Math.round((packs + delta) * 10) / 10));
+    const nextPacks = Math.max(0, Math.min(5, Math.round((packs + delta) * 100) / 100));
     onUpdate({
       packs: nextPacks,
       waterML,
@@ -45,6 +46,22 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
       waterML: nextWater,
       actionDescription: `水 ${delta > 0 ? `+${delta}` : delta}mL`,
     });
+  };
+
+  // 天秤で量った溶質（g）をフラスコに加える（g → mol の換算）
+  const handleAddGrams = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (readOnly) return;
+    const grams = parseFloat(inputGrams);
+    if (isNaN(grams) || grams <= 0) return;
+    const addedPacks = calculateMassToMoles(grams, substanceId);
+    const nextPacks = Math.min(5, Math.round((packs + addedPacks) * 100) / 100);
+    onUpdate({
+      packs: nextPacks,
+      waterML,
+      actionDescription: `${currentSubstance.formula} ${grams}g（${addedPacks}mol）を加える`,
+    });
+    setInputGrams('');
   };
 
   const handleAlignToMark = (targetML: number) => {
@@ -153,7 +170,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                         style={{ backgroundColor: currentSubstance.theme.accent }}
                       >
                         <span>{currentSubstance.icon}</span>
-                        <span>{idx === Math.ceil(calc.packs) - 1 && calc.packs % 1 !== 0 ? (calc.packs % 1).toFixed(1) : '1.0'}mol</span>
+                        <span>{idx === Math.ceil(calc.packs) - 1 && calc.packs % 1 !== 0 ? Number((calc.packs % 1).toFixed(3)) : '1.0'}mol</span>
                       </div>
                     ))}
                   </div>
@@ -359,6 +376,36 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Add solute by mass (g → mol) */}
+          <div className="flex flex-col gap-1 pt-2 border-t border-slate-200">
+            <span className="text-[11px] font-medium text-amber-800 flex items-center gap-1">
+              <Scale className="w-3 h-3 text-amber-600" />
+              <span>天秤で量った {currentSubstance.formula} を重さ（g）で入れる（1パック ＝ {currentSubstance.molarMass}g）</span>
+            </span>
+            <form onSubmit={handleAddGrams} className="flex gap-1.5 max-w-sm">
+              <div className="relative flex-1">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  inputMode="decimal"
+                  placeholder="例: 2.93"
+                  value={inputGrams}
+                  onChange={(e) => setInputGrams(e.target.value)}
+                  className="w-full py-1.5 px-3 text-xs font-mono font-bold bg-white rounded-lg border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-slate-500"
+                />
+                <span className="absolute right-2.5 top-1.5 text-xs text-slate-400 font-sans pointer-events-none">g</span>
+              </div>
+              <button
+                type="submit"
+                disabled={!inputGrams || packs >= 5}
+                className="px-3 py-1.5 text-xs font-bold text-amber-950 bg-amber-200 hover:bg-amber-300 rounded-lg border border-amber-400 disabled:opacity-40 transition-colors"
+              >
+                加える
+              </button>
+            </form>
           </div>
         </div>
       )}

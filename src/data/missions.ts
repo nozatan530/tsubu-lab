@@ -666,7 +666,7 @@ export const MISSIONS: Mission[] = [
     title: '0.10mol/L の NaCl 溶液 500mL を作るには？',
     subtitle: 'カード帳のモル質量を使って、g ⇔ mol ⇔ 体積 をつなげよう',
     question: '0.10mol/L の NaCl 水溶液を 500mL（0.50L）作りたい。NaCl は何g 必要でしょう？（NaCl: 58.5g/mol）',
-    goalDescription: 'カード帳で 1パックの重さを確認し、必要な食塩を投入して標線 500mL に合わせよう！',
+    goalDescription: 'カード帳で 1パックの重さを確認し、必要な食塩を重さ（g）で入れて、標線 500mL に合わせよう！',
     targetMoves: 4,
     initialState: {
       flaskSubstanceId: 'NaCl',
