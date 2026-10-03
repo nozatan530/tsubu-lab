@@ -69,7 +69,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
     setSelectedMark(targetML);
     // Solute expands volume: water + soluteContribution = targetML
     // Therefore waterML = Math.max(0, targetML - soluteContribution)
-    const soluteVol = Math.round(packs * currentSubstance.volumePerMolML);
+    const soluteVol = packs * currentSubstance.volumePerMolML;
     const targetWater = Math.max(0, targetML - soluteVol);
     onUpdate({
       packs,
@@ -81,8 +81,9 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
   const handleTakeOut = (type: 'half' | '100ml') => {
     if (readOnly || calc.solutionVolumeML <= 0) return;
     if (type === 'half') {
-      const nextPacks = Math.round((packs * 0.5) * 100) / 100;
-      const nextWater = Math.round(waterML * 0.5);
+      // 溶質も水も同じ割合で減らす（丸めると濃度がずれる）
+      const nextPacks = packs * 0.5;
+      const nextWater = waterML * 0.5;
       onUpdate({
         packs: nextPacks,
         waterML: nextWater,
@@ -91,8 +92,8 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
     } else {
       const ratio = 100 / calc.solutionVolumeML;
       if (ratio >= 1) return;
-      const nextPacks = Math.max(0, Math.round((packs * (1 - ratio)) * 100) / 100);
-      const nextWater = Math.max(0, Math.round(waterML * (1 - ratio)));
+      const nextPacks = Math.max(0, packs * (1 - ratio));
+      const nextWater = Math.max(0, waterML * (1 - ratio));
       onUpdate({
         packs: nextPacks,
         waterML: nextWater,

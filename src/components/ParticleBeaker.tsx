@@ -81,8 +81,9 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
 
   const handleSplit = (fraction: number) => {
     if (readOnly) return;
-    const splitSolute = Math.round(soluteG * fraction);
-    const splitWater = Math.round(waterG * fraction);
+    // 丸めずに同じ割合で分ける（整数に丸めると2つのビーカーの濃度がずれる）
+    const splitSolute = soluteG * fraction;
+    const splitWater = waterG * fraction;
 
     const remainingSolute = soluteG - splitSolute;
     const remainingWater = waterG - splitWater;

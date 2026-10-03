@@ -9,6 +9,12 @@ import { SUBSTANCES } from '../data/cards';
 // Avogadro constant: 6.02 x 10^23 particles per mole
 export const AVOGADRO = 6.02;
 
+// 表示用の丸め。計算は丸める前の値で行い、くみ出しなどで濃度がずれないようにする
+const roundTo = (value: number, digits: number) => {
+  const f = 10 ** digits;
+  return Math.round(value * f) / f;
+};
+
 /**
  * 質量パーセント濃度（%）を計算
  * 溶質質量(g) ÷ 溶液質量(g) × 100
@@ -27,9 +33,9 @@ export function calculateMassPercent(soluteG: number, waterG: number): {
   const percent = solutionG > 0 ? (safeSolute / solutionG) * 100 : 0;
 
   return {
-    soluteG: safeSolute,
-    waterG: safeWater,
-    solutionG,
+    soluteG: roundTo(safeSolute, 2),
+    waterG: roundTo(safeWater, 2),
+    solutionG: roundTo(solutionG, 2),
     percent,
     formattedPercent: percent.toFixed(1).replace(/\.0$/, ''),
   };
@@ -97,22 +103,22 @@ export function calculateMolarConcentration(
   formattedConcentration: string;
 } {
   const substance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
-  const safePacks = Math.max(0, Math.round(packs * 100) / 100);
+  const safePacks = Math.max(0, packs);
   const safeWater = Math.max(0, waterML);
 
   // Solute volume contribution (NaCl is ~20mL per mol, roughly linear)
-  const soluteVolumeContributionML = Math.round(safePacks * substance.volumePerMolML);
+  const soluteVolumeContributionML = safePacks * substance.volumePerMolML;
   const solutionVolumeML = safeWater + soluteVolumeContributionML;
   const solutionVolumeL = solutionVolumeML / 1000;
 
   const molarConcentration = solutionVolumeL > 0 ? safePacks / solutionVolumeL : 0;
 
   return {
-    packs: safePacks,
-    waterML: safeWater,
-    solutionVolumeML,
+    packs: roundTo(safePacks, 3),
+    waterML: roundTo(safeWater, 1),
+    solutionVolumeML: roundTo(solutionVolumeML, 1),
     solutionVolumeL,
-    soluteVolumeContributionML,
+    soluteVolumeContributionML: roundTo(soluteVolumeContributionML, 1),
     molarConcentration,
     formattedConcentration: molarConcentration.toFixed(2).replace(/\.00$/, '.0'),
   };
