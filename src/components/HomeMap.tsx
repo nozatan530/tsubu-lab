@@ -42,7 +42,7 @@ const UNITS = [
     id: 'unit3' as UnitId,
     num: '③',
     title: 'モル濃度',
-    concept: '目盛り付きメスフラスコと標線合わせ',
+    concept: '標線に合わせて「溶液全体」の体積を決める',
     tagline: '「水1Lに溶かす」と「溶液全体を1Lにする」は大違い！',
     color: 'from-emerald-500 to-teal-500',
     borderColor: 'border-emerald-200',
@@ -95,9 +95,9 @@ export const HomeMap: React.FC<HomeMapProps> = ({
               つぶラボで体験する「量」と「割合」
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              公式の丸暗記はもういりません。
+              公式を覚える前に、まず仕組みを体験しよう。
               <strong>「予想する → 粒を動かして確かめる → 粒・図・式の3つで見比べる」</strong>
-              ことで、モルと濃度の仕組みがスッキリ腑に落ちます。
+              ことで、公式の意味（何を何で割っているのか）がつかめます。
             </p>
           </div>
 

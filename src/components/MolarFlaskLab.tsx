@@ -126,7 +126,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
           <div className="flex items-center justify-between w-full mb-3 text-xs text-slate-300">
             <span className="font-semibold flex items-center gap-1.5">
               <Beaker className="w-4 h-4 text-emerald-400" />
-              <span>メスフラスコ型 容器（目盛り付き）</span>
+              <span>標線付きの容器（溶液全体を標線に合わせる）</span>
             </span>
             <span className="font-mono text-emerald-300 text-[11px] bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/30">
               溶液全体の体積: {calc.solutionVolumeML} mL（{calc.solutionVolumeL.toFixed(2)} L）
@@ -204,6 +204,9 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
               水 {calc.waterML}mL ＋ 溶質 {calc.soluteVolumeContributionML}mL ＝ 溶液全体 {calc.solutionVolumeML}mL
             </span>
           </div>
+          <p className="w-full mt-1.5 text-[10px] text-slate-400 leading-relaxed">
+            ※ 本物のメスフラスコは標線が1本だけで、100mL用・500mL用・1L用のように容器を使い分けます。ここでは1つの容器に標線をまとめています。
+          </p>
         </div>
       </div>
 

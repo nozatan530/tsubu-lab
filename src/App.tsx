@@ -149,7 +149,7 @@ export default function App() {
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>つぶラボ — 高校化学基礎 粒子概念学習プラットフォーム</span>
           <span className="text-[11px] text-slate-400">
-            データはブラウザ（localStorage）に安全に保存されます
+            記録はこの端末のブラウザに保存されます（別の端末には引き継がれません）
           </span>
         </div>
       </footer>
