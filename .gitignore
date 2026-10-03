@@ -6,3 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# テンプレートから追加
+.env.*
+prompts/*/eval-result.json
+docs/verify/*.png
+.claude/settings.local.json
