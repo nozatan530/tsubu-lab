@@ -50,11 +50,12 @@ export function calculateMolesToQuantities(packs: number, substanceId: string): 
   massG: number; // g (重さ)
   particleCountTen23: number; // x 10^23 個
   formattedParticles: string; // e.g. "6.02 × 10²³" or "1.20 × 10²⁴"
-  pieces: number; // 0.1パック単位 (0.1mol = 1 piece)
+  pieces: number; // 0.1パック単位 (0.1mol = 1 piece)。0.17mol なら 1.7
 } {
   const substance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
-  const safePacks = Math.max(0, Math.round(packs * 100) / 100);
-  const massG = Math.round(safePacks * substance.molarMass * 10) / 10;
+  // 計算は丸める前の値で行う（g から換算した mol を丸めてから g に戻すとずれるため）
+  const safePacks = Math.max(0, packs);
+  const massG = roundTo(safePacks * substance.molarMass, 1);
   const rawParticles = safePacks * AVOGADRO;
   
   let formattedParticles: string;
@@ -67,12 +68,12 @@ export function calculateMolesToQuantities(packs: number, substanceId: string): 
   }
 
   return {
-    packs: safePacks,
+    packs: roundTo(safePacks, 2),
     molarMass: substance.molarMass,
     massG,
     particleCountTen23: rawParticles,
     formattedParticles,
-    pieces: Math.round(safePacks * 10),
+    pieces: roundTo(safePacks * 10, 1),
   };
 }
 
@@ -82,7 +83,7 @@ export function calculateMolesToQuantities(packs: number, substanceId: string): 
 export function calculateMassToMoles(massG: number, substanceId: string): number {
   const substance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
   if (massG <= 0 || substance.molarMass <= 0) return 0;
-  return Math.round((massG / substance.molarMass) * 100) / 100;
+  return massG / substance.molarMass;
 }
 
 /**

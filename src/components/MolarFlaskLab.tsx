@@ -55,11 +55,11 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
     const grams = parseFloat(inputGrams);
     if (isNaN(grams) || grams <= 0) return;
     const addedPacks = calculateMassToMoles(grams, substanceId);
-    const nextPacks = Math.min(5, Math.round((packs + addedPacks) * 100) / 100);
+    const nextPacks = Math.min(5, packs + addedPacks);
     onUpdate({
       packs: nextPacks,
       waterML,
-      actionDescription: `${currentSubstance.formula} ${grams}g（${addedPacks}mol）を加える`,
+      actionDescription: `${currentSubstance.formula} ${grams}g（${Number(addedPacks.toFixed(3))}mol）を加える`,
     });
     setInputGrams('');
   };

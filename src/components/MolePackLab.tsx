@@ -39,7 +39,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
 
   const handlePacksChange = (delta: number) => {
     if (readOnly) return;
-    const nextPacks = Math.max(0, Math.min(10, Math.round((packs + delta) * 10) / 10));
+    const nextPacks = Math.max(0, Math.min(10, Math.round((packs + delta) * 100) / 100));
     onUpdate({
       substanceId,
       packs: nextPacks,
@@ -56,7 +56,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
       onUpdate({
         substanceId,
         packs: calculatedPacks,
-        actionDescription: `重さ ${val}g から ${calculatedPacks}mol を計算`,
+        actionDescription: `重さ ${val}g から ${Number(calculatedPacks.toFixed(3))}mol を計算`,
       });
       setInputGrams('');
     }
@@ -64,8 +64,11 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
 
   // Full packs (1.0mol = 1 full crate with 10 units)
   const fullPacksCount = Math.floor(quantities.packs);
-  // Fractional units (0.1mol unit = 1 slot)
-  const fractionalUnits = Math.round((quantities.packs - fullPacksCount) * 10);
+  // 端数のパック（例: 0.17mol → 小分け 1個が満杯 ＋ 2個目が7割）
+  const fractionalPacks = Math.round((quantities.packs - fullPacksCount) * 100) / 100;
+  const fractionalPieces = Math.round(fractionalPacks * 1000) / 100; // 小分けの個数（小数あり）
+  const fractionalUnits = Math.floor(fractionalPieces + 1e-9); // 満杯の小分け
+  const hasPartialUnit = fractionalPieces - fractionalUnits > 1e-9;
 
   const theme = currentSubstance.theme;
 
@@ -216,7 +219,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                 ))}
 
                 {/* Fractional Pack (If partial units exist, e.g. 0.3mol = 3 active slots) */}
-                {fractionalUnits > 0 && (
+                {fractionalPacks > 0 && (
                   <div
                     className="flex flex-col items-center p-2.5 rounded-xl shadow-md border-2 border-dashed transition-all"
                     style={{
@@ -225,9 +228,9 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                     }}
                   >
                     <div className="text-[11px] font-bold mb-1.5 flex items-center gap-1.5 text-white">
-                      <span>📦 {(fractionalUnits * 0.1).toFixed(1)}パック（小分け {fractionalUnits}個）</span>
+                      <span>📦 {fractionalPacks}パック（小分け {fractionalPieces}個分）</span>
                       <span className="text-slate-300 font-normal">
-                        ＝ {(fractionalUnits * 0.1 * currentSubstance.molarMass).toFixed(1)}g
+                        ＝ {((Math.max(0, packs) - fullPacksCount) * currentSubstance.molarMass).toFixed(1)}g
                       </span>
                     </div>
 
@@ -235,17 +238,20 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                     <div className="grid grid-cols-5 gap-1.5 p-1.5 bg-slate-900/90 rounded-lg border border-slate-700/80">
                       {Array.from({ length: 10 }).map((_, slotIdx) => {
                         const isActive = slotIdx < fractionalUnits;
+                        const isPartial = hasPartialUnit && slotIdx === fractionalUnits;
                         return (
                           <div
                             key={`frac-slot-${slotIdx}`}
                             className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${
                               isActive
                                 ? `${theme.activeSlot} shadow-xs scale-102`
+                                : isPartial
+                                ? `${theme.activeSlot} opacity-50 border border-dashed border-white/60`
                                 : 'bg-slate-800/60 border border-slate-700/40 text-slate-600'
                             }`}
-                            title={isActive ? `小分け 0.1mol (${currentSubstance.name})` : '空の枠'}
+                            title={isActive ? `小分け 0.1mol (${currentSubstance.name})` : isPartial ? '小分けの一部（0.1mol 未満）' : '空の枠'}
                           >
-                            {isActive ? (
+                            {isActive || isPartial ? (
                               <span className="text-xs select-none">
                                 {currentSubstance.icon}
                               </span>
@@ -258,7 +264,7 @@ export const MolePackLab: React.FC<MolePackLabProps> = ({
                     </div>
 
                     <div className="text-[9px] text-slate-400 mt-1">
-                      10枠中 {fractionalUnits}枠使用（0.{fractionalUnits}パック）
+                      10枠中 {fractionalPieces}枠分（{fractionalPacks}パック）
                     </div>
                   </div>
                 )}
