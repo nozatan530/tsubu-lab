@@ -120,6 +120,7 @@ const SOLUTIONS: Record<string, Step[]> = {
   'u1-m3': [B.solute(5), B.solute(5), ...repeat(3, B.water(50)), ...repeat(4, B.water(10))],
   'u1-m4': [B.merge()],
   'u1-m5': [B.water(50)],
+  'u1-m6': [B.merge()],
   'u2-m1': [P.substance('NaCl')],
   'u2-m2': [P.change(1)],
   'u2-m3': [P.grams(36)],
@@ -146,6 +147,10 @@ const MISTAKES: Record<string, { why: string; steps: Step[] }[]> = {
     { why: '食塩10gに水200g（溶液210g）', steps: [B.solute(5), B.solute(5), ...repeat(4, B.water(50))] },
   ],
   'u1-m5': [{ why: '水を入れすぎる（+100g）', steps: [B.water(50), B.water(50)] }],
+  'u1-m6': [
+    { why: '混ぜる前に食塩を足す', steps: [B.solute(1), B.merge()] },
+    { why: '混ぜる前に水を足す', steps: [B.water(10), B.merge()] },
+  ],
   'u2-m2': [{ why: '3パックにする', steps: [P.change(1), P.change(1)] }],
   'u2-m3': [{ why: 'NaCl で2パックにする', steps: [P.substance('NaCl'), P.grams(117)] }],
   'u2-m4': [{ why: 'CO₂ 1パックのまま（44g）', steps: [] }],
@@ -255,6 +260,11 @@ test('ビーカーを半分・1/4ずつ何度くみ出しても、AとBの濃度
 
 test('同じ質量の10%と20%を混ぜると15%（u1-m4）', () => {
   const s = beakerMerge({ soluteG: 10, waterG: 90, secondBeaker: { soluteG: 20, waterG: 80 } });
+  near(calculateMassPercent(s.soluteG, s.waterG).percent, 15);
+});
+
+test('5% 100g と 20% 200g を混ぜると、真ん中の12.5%ではなく15%（u1-m6）', () => {
+  const s = beakerMerge({ soluteG: 5, waterG: 95, secondBeaker: { soluteG: 40, waterG: 160 } });
   near(calculateMassPercent(s.soluteG, s.waterG).percent, 15);
 });
 

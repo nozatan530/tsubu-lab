@@ -243,6 +243,60 @@ export const MISSIONS: Mission[] = [
       };
     },
   },
+  {
+    id: 'u1-m6',
+    unitId: 'unit1',
+    order: 6,
+    title: '重さの違う食塩水を混ぜたら？',
+    subtitle: '量が違う液を混ぜても、濃度は「真ん中」になるか確かめよう',
+    question: '5%の食塩水 100g と、20%の食塩水 200g を混ぜ合わせると、濃度は何%になるでしょう？',
+    goalDescription: '「混ぜる」ボタンを押して、混ぜた後の食塩の量・溶液全体の量・濃度を確かめよう！',
+    targetMoves: 2,
+    initialState: {
+      soluteG: 5,
+      waterG: 95,
+      secondBeaker: {
+        soluteG: 40,
+        waterG: 160,
+      },
+    },
+    choices: [
+      {
+        id: 'c1',
+        label: '12.5%（5% と 20% のちょうど真ん中）',
+        isCorrect: false,
+        explanation: 'ちょうど真ん中になるのは、同じ重さどうしを混ぜたとき（ミッション#4）だけです。今回は 20% の液が 2倍あります。',
+      },
+      {
+        id: 'c2',
+        label: '15%（20% の液が多いぶん、濃い方に寄る）',
+        isCorrect: true,
+        explanation: '大正解！食塩は 5g ＋ 40g ＝ 45g、溶液全体は 100g ＋ 200g ＝ 300g なので、45 ÷ 300 × 100 ＝ 15% です。',
+      },
+      {
+        id: 'c3',
+        label: '25%（5% ＋ 20%）',
+        isCorrect: false,
+        explanation: '濃度（割合）はそのまま足し算できません。食塩は増えますが、溶液全体も 300g に増えます。',
+      },
+    ],
+    checkCompletion: (state) => {
+      // 2つのビーカーを1つに混ぜ、食塩45g・溶液300g（15%）になったら達成
+      const hasMerged = !state.secondBeaker;
+      const calc = calculateMassPercent(state.soluteG, state.waterG);
+      const isSuccess = hasMerged && Math.abs(calc.solutionG - 300) < 0.01 && Math.abs(calc.percent - 15) < 0.01;
+
+      return {
+        isSuccess,
+        feedback: isSuccess
+          ? `混ぜ合わせ完了！ 食塩は 5g ＋ 40g ＝ ${calc.soluteG}g、溶液全体は 100g ＋ 200g ＝ ${calc.solutionG}g なので、${calc.soluteG} ÷ ${calc.solutionG} × 100 ＝ ${calc.formattedPercent}% になりました！`
+          : !hasMerged
+          ? '「混ぜる」ボタンを押して、2つのビーカーを1つにしてみましょう。'
+          : `現在: 食塩 ${calc.soluteG}g / 溶液 ${calc.solutionG}g / 濃度 ${calc.formattedPercent}%（混ぜる前に食塩や水を足すと変わってしまいます。リセットしてやり直そう）`,
+        particleExplanation: '濃度は「溶液全体に対する食塩の割合」なので、5% と 20% を平均するのではなく、食塩どうし（5g＋40g）・溶液どうし（100g＋200g）を足してから割ります。●で見ると、45個が 300g の中に散らばり、100g あたり 15個（15%）。20% の液の方が多いので、真ん中の 12.5% より濃い方に引っぱられます。',
+      };
+    },
+  },
 
   // ==========================================
   // ② 物質量（モル）(Unit 2)
