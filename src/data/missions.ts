@@ -716,12 +716,12 @@ export const MISSIONS: Mission[] = [
     title: 'ブドウ糖 18g を溶かして 200mL にしたときのモル濃度は？',
     subtitle: '質量(g)からモル(mol)を求め、溶液の体積(L)で割ろう',
     question: 'ブドウ糖（C₆H₁₂O₆: 180g/mol）18.0g を水に溶かして、全体を 200mL（0.20L）にしました。モル濃度は何mol/L？',
-    goalDescription: 'C₆H₁₂O₆ を選び、18g（0.10mol）を溶かして体積 200mL に合わせたときのモル濃度を確認しよう！',
+    goalDescription: '空の容器にブドウ糖 18g を重さ（g）で入れ、標線 200mL まで水を合わせて、モル濃度を確かめよう！',
     targetMoves: 4,
     initialState: {
       flaskSubstanceId: 'C6H12O6',
-      flaskPacks: 0.1,
-      flaskWaterML: 189, // ~200mL total with solute
+      flaskPacks: 0,
+      flaskWaterML: 0,
     },
     choices: [
       {

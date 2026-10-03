@@ -25,7 +25,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
 }) => {
   const currentSubstance = SUBSTANCES[substanceId] || SUBSTANCES.NaCl;
   const calc = calculateMolarConcentration(packs, waterML, substanceId);
-  const [selectedMark, setSelectedMark] = useState<number>(1000); // 100, 500, or 1000 mL
+  const [selectedMark, setSelectedMark] = useState<number>(1000); // 100, 200, 500, or 1000 mL
   const [inputGrams, setInputGrams] = useState<string>('');
 
   const handlePacksChange = (delta: number) => {
@@ -334,6 +334,13 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                   className="flex-1 py-1.5 text-[11px] font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 rounded-lg border border-emerald-300 transition-colors"
                 >
                   100mL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAlignToMark(200)}
+                  className="flex-1 py-1.5 text-[11px] font-bold text-emerald-900 bg-emerald-100 hover:bg-emerald-200 rounded-lg border border-emerald-300 transition-colors"
+                >
+                  200mL
                 </button>
                 <button
                   type="button"
