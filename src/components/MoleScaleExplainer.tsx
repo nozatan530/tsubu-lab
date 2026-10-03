@@ -90,24 +90,24 @@ const SCALE_STAGES: ScaleStage[] = [
     molesVal: 100 / 6022,
     molesDisplay: '約 0.017 mol',
     activeSlots: 0,
-    desc: '100垓個。あと6倍集めると、ちょうどキリのいい「1マス（0.1mol）」に届きます！',
+    desc: '100垓個。あと6倍集めると、ちょうどキリのいい「小分け1個（0.1mol）」に届きます！',
     reaction: '0.30g〜3.00gと、かなり測れる重さに近づいてきました！',
     isPackUnit: false,
-    highlightNote: '1マス（0.1mol）まであと少し！',
+    highlightNote: '小分け1個（0.1mol）まであと少し！',
   },
   {
     step: 6,
     id: '600gai',
-    tabLabel: '600垓個（1マス）',
+    tabLabel: '600垓個（小分け1個）',
     countTitle: '約 600 垓個',
     exponentText: '6.02 × 10²² 個',
     molesVal: 0.1,
     molesDisplay: 'ちょうど 0.10 mol（0.1パック）',
     activeSlots: 1,
-    desc: '★大注目！これが「1パック（10マス）のちょうど1マス分」です！',
-    reaction: 'カチッ！1マス分の小分けトレーが点灯！1モル（1パック）の1/10の重さになりました！',
+    desc: '★大注目！これが「1パック（小分け10個）のちょうど1個分」です！',
+    reaction: 'カチッ！小分け1個が点灯！1モル（1パック）の1/10の重さになりました！',
     isPackUnit: true,
-    highlightNote: '1マスの小分け ＝ 約600垓個 ＝ 0.1mol',
+    highlightNote: '小分け1個 ＝ 約600垓個 ＝ 0.1mol',
   },
   {
     step: 7,
@@ -118,10 +118,10 @@ const SCALE_STAGES: ScaleStage[] = [
     molesVal: 1.0,
     molesDisplay: 'ちょうど 1.00 mol（1パック丸ごと）',
     activeSlots: 10,
-    desc: '★★ 600垓個（1マス）× 10マス ＝ 約6000垓個（6.02×10²³個）！',
-    reaction: '満杯！10マス全てが埋まり、実験室でしっかり扱える「モル質量（18g〜180g）」が完成！',
+    desc: '★★ 600垓個（小分け1個）× 10個 ＝ 約6000垓個（6.02×10²³個）！',
+    reaction: '満杯！小分け10個が全部埋まり、実験室でしっかり扱える「モル質量（18g〜180g）」が完成！',
     isPackUnit: true,
-    highlightNote: '1パック（10マス）＝ 約6000垓個 ＝ 1.0mol',
+    highlightNote: '1パック（小分け10個）＝ 約6000垓個 ＝ 1.0mol',
   },
 ];
 
@@ -164,8 +164,8 @@ export const MoleScaleExplainer: React.FC<MoleScaleExplainerProps> = ({
             </h3>
             <p className="text-xs text-slate-700 leading-relaxed">
               原子や分子は<strong>1粒があまりにも軽すぎるため天秤に載せても測れません</strong>。
-              <strong>1垓個</strong>で微量な差が出始め、<strong>約600垓個集めると「1マス（0.1mol）」</strong>になり、
-              <strong>10マス（約6000垓個）集まると「1パック丸ごと（1.0mol）」</strong>になって天秤でしっかり測れるグラムになります！
+              <strong>1垓個</strong>で微量な差が出始め、<strong>約600垓個集めると「小分け1個（0.1mol）」</strong>になり、
+              <strong>小分け10個（約6000垓個）集まると「1パック丸ごと（1.0mol）」</strong>になって天秤でしっかり測れるグラムになります！
             </p>
           </div>
         </div>
@@ -200,12 +200,12 @@ export const MoleScaleExplainer: React.FC<MoleScaleExplainerProps> = ({
         </div>
       </div>
 
-      {/* STEP TABS: 1粒 → 1兆個 → 1垓個 → 10垓個 → 100垓個 → 600垓個(1マス) → 6000垓個(1パック) */}
+      {/* STEP TABS: 1粒 → 1兆個 → 1垓個 → 10垓個 → 100垓個 → 600垓個(小分け1個) → 6000垓個(1パック) */}
       <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200 space-y-2">
         <div className="flex items-center justify-between text-xs text-slate-600 px-1 font-semibold">
           <span>粒の数を段階的に増やしてみよう（タブをタップ）:</span>
           <span className="text-[11px] text-amber-800 font-bold hidden sm:inline">
-            ※ 600垓個（1マス）と 6000垓個（1パック）に注目！
+            ※ 600垓個（小分け1個）と 6000垓個（1パック）に注目！
           </span>
         </div>
 
@@ -245,7 +245,7 @@ export const MoleScaleExplainer: React.FC<MoleScaleExplainerProps> = ({
         </div>
       </div>
 
-      {/* 4-Way Synchronized Interactive State Display: [個数] ⇔ [モル数] ⇔ [10マス箱の絵] ⇔ [天秤の重さ(g)] */}
+      {/* 4-Way Synchronized Interactive State Display: [個数] ⇔ [モル数] ⇔ [小分け10個入りパックの絵] ⇔ [天秤の重さ(g)] */}
       <div className="bg-slate-900 text-white p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden space-y-5">
         <div
           className="absolute inset-0 opacity-15 pointer-events-none"
@@ -304,7 +304,7 @@ export const MoleScaleExplainer: React.FC<MoleScaleExplainerProps> = ({
                 {stage.molesVal === 0.1 ? '0.10 mol' : stage.molesVal === 1.0 ? '1.00 mol' : stage.molesVal === 0 ? '0 mol' : `${stage.molesVal.toFixed(4)} mol`}
               </div>
               <div className="text-xs font-sans text-amber-200 mt-0.5 font-bold">
-                {stage.id === '600gai' ? '0.1 パック（1マス分）' : stage.id === '6000gai' ? '1 パック（満杯）' : 'パック未満'}
+                {stage.id === '600gai' ? '0.1 パック（小分け1個分）' : stage.id === '6000gai' ? '1 パック（満杯）' : 'パック未満'}
               </div>
             </div>
             <span className="text-[10px] text-slate-500 mt-2 block">
@@ -312,10 +312,10 @@ export const MoleScaleExplainer: React.FC<MoleScaleExplainerProps> = ({
             </span>
           </div>
 
-          {/* 3. The 10-Slot Pack Crate (1マス = 600垓個, 1パック = 6000垓個) */}
+          {/* 3. The 10-Slot Pack Crate (小分け1個 = 600垓個, 1パック = 6000垓個) */}
           <div className="p-3.5 rounded-xl bg-slate-800/90 border border-slate-700 flex flex-col justify-between">
             <span className="text-[11px] font-semibold text-slate-400 block mb-1">
-              ③ パック棚（10マス箱）
+              ③ パック（小分け10個入り）
             </span>
             <div className="flex flex-col items-center justify-center my-1">
               {/* 10-slot crate visual */}
@@ -330,7 +330,7 @@ export const MoleScaleExplainer: React.FC<MoleScaleExplainerProps> = ({
                           ? `${theme.activeSlot} shadow-xs scale-105`
                           : 'bg-slate-800/60 border border-slate-700/50 text-slate-600'
                       }`}
-                      title={isActive ? `1マス: 約600垓個 (${substance.name})` : '空のマス'}
+                      title={isActive ? `小分け1個: 約600垓個 (${substance.name})` : '空の枠'}
                     >
                       {isActive ? (
                         <span>{substance.icon}</span>
@@ -343,14 +343,14 @@ export const MoleScaleExplainer: React.FC<MoleScaleExplainerProps> = ({
               </div>
               <span className="text-[10px] text-slate-300 font-mono mt-1.5 font-bold">
                 {stage.activeSlots === 1
-                  ? '1マス点灯（約600垓個）'
+                  ? '小分け1個 点灯（約600垓個）'
                   : stage.activeSlots === 10
-                  ? '10マス満杯（約6000垓個）'
-                  : '0マス（1マスに未達）'}
+                  ? '小分け10個 満杯（約6000垓個）'
+                  : '小分け0個（1個に届かない）'}
               </span>
             </div>
             <span className="text-[10px] text-slate-500 mt-1 block">
-              1マス ＝ 1パックの1/10
+              小分け1個 ＝ 1パックの1/10
             </span>
           </div>
 
@@ -389,21 +389,21 @@ export const MoleScaleExplainer: React.FC<MoleScaleExplainerProps> = ({
         </div>
       </div>
 
-      {/* The Crucial Connection Summary: 1マス(600垓個) ➔ 1パック(6000垓個) ➔ モル質量 */}
+      {/* The Crucial Connection Summary: 小分け1個(600垓個) ➔ 1パック(6000垓個) ➔ モル質量 */}
       <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
         <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-500" />
-          <span>つながりのまとめ：なぜ 1マス＝600垓個、1パック＝6000垓個なのか？</span>
+          <span>つながりのまとめ：なぜ 小分け1個＝600垓個、1パック＝6000垓個なのか？</span>
         </h4>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
           <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 flex flex-col gap-1.5">
             <span className="font-bold text-amber-950 flex items-center gap-1.5 text-sm">
               <span className="w-5 h-5 rounded-md bg-amber-500 text-slate-950 font-bold flex items-center justify-center text-xs">1</span>
-              <span>1マス（0.1パック・0.1mol）＝ 約600垓個</span>
+              <span>小分け1個（0.1パック・0.1mol）＝ 約600垓個</span>
             </span>
             <p className="text-amber-900 leading-relaxed text-[11px]">
-              小さすぎる粒を約600垓個集めて、ようやく1マスの小分けが埋まります。
+              小さすぎる粒を約600垓個集めて、ようやく小分け1個が埋まります。
               重さは <strong>{substance.name} なら {(substance.molarMass * 0.1).toFixed(2)}g</strong>（モル質量の1/10）です！
             </p>
           </div>
@@ -411,10 +411,10 @@ export const MoleScaleExplainer: React.FC<MoleScaleExplainerProps> = ({
           <div className="p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200 flex flex-col gap-1.5">
             <span className="font-bold text-emerald-950 flex items-center gap-1.5 text-sm">
               <span className="w-5 h-5 rounded-md bg-emerald-600 text-white font-bold flex items-center justify-center text-xs">2</span>
-              <span>1パック（10マス・1.0mol）＝ 約6000垓個</span>
+              <span>1パック（小分け10個・1.0mol）＝ 約6000垓個</span>
             </span>
             <p className="text-emerald-900 leading-relaxed text-[11px]">
-              約600垓個のマスが10個集まるので、合計で <strong>約6000垓個（6.02×10²³個）</strong>！
+              約600垓個の小分けが10個集まるので、合計で <strong>約6000垓個（6.02×10²³個）</strong>！
               重さは ちょうど <strong>{substance.name} なら {substance.molarMass}g</strong> になります！
             </p>
           </div>
@@ -457,7 +457,7 @@ export const MoleScaleExplainer: React.FC<MoleScaleExplainerProps> = ({
                 <h2 className="text-base font-bold text-slate-900">
                   モル（mol）の仕組みを解き明かそう！
                 </h2>
-                <p className="text-xs text-slate-500">1粒 ➔ 1垓 ➔ 10垓 ➔ 100垓 ➔ 600垓（1マス）➔ 6000垓個（1パック）</p>
+                <p className="text-xs text-slate-500">1粒 ➔ 1垓 ➔ 10垓 ➔ 100垓 ➔ 600垓（小分け1個）➔ 6000垓個（1パック）</p>
               </div>
             </div>
             {onClose && (

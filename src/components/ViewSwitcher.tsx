@@ -27,7 +27,7 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
           }`}
         >
           <CircleDot className={`w-3.5 h-3.5 ${currentView === 'particles' ? 'text-orange-500' : 'text-slate-400'}`} />
-          <span>粒（ビーカー・箱）</span>
+          <span>粒（ビーカー・パック）</span>
         </button>
 
         <button

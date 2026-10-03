@@ -29,7 +29,7 @@ export const ScaleLegend: React.FC<ScaleLegendProps> = ({ unitId, className = ''
       {unitId === 'unit2' && (
         <div className="flex items-center gap-2 font-sans text-[11px]">
           <span className="flex items-center gap-1">
-            <span className="inline-block px-1 rounded-xs bg-amber-500 text-slate-950 font-bold text-[10px]">📦 1箱</span>
+            <span className="inline-block px-1 rounded-xs bg-amber-500 text-slate-950 font-bold text-[10px]">📦 1パック</span>
             <span className="text-amber-200">＝ 約6000垓個（6.02×10²³個 ＝ 1mol）</span>
           </span>
           <span className="text-slate-500">|</span>

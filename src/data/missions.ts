@@ -60,7 +60,7 @@ export const MISSIONS: Mission[] = [
     title: '分母は「水」？「溶液全体」？',
     subtitle: '質量パーセント濃度の計算で、割る相手を確かめよう',
     question: '水 90g に食塩 10g を溶かしました。この食塩水の質量パーセント濃度は何%でしょう？',
-    goalDescription: 'てんびんと式の数字に注目して、分母が何gになっているか確認しよう！',
+    goalDescription: '天秤と式の数字に注目して、分母が何gになっているか確認しよう！',
     targetMoves: 2,
     initialState: {
       soluteG: 10,
@@ -295,8 +295,8 @@ export const MISSIONS: Mission[] = [
     unitId: 'unit2',
     order: 2,
     title: '水 H₂O 2パックは何g？',
-    subtitle: 'パック数から重さ（g）を計算しよう',
-    question: '水（H₂O）2パック（2.0mol）の重さは何gでしょう？（H₂O のモル質量は 18.0g/mol）',
+    subtitle: 'パック数から質量（g）を計算しよう',
+    question: '水（H₂O）2パック（2.0mol）の質量は何gでしょう？（H₂O のモル質量は 18.0g/mol）',
     goalDescription: 'H₂O を選び、パック数を 2.0 に増やして重さを確かめよう！',
     targetMoves: 3,
     initialState: {

@@ -416,7 +416,7 @@ export const UnitWorkspace: React.FC<UnitWorkspaceProps> = ({
               次のステップへ！
             </span>
             <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-0.5">
-              単元② 物質量（モル）― 1粒から 600垓個（1マス）、6000垓個（1パック）へ！
+              単元② 物質量（モル）― 1粒から 600垓個（小分け1個）、6000垓個（1パック）へ！
             </h3>
             <p className="text-xs text-slate-600 mt-0.5">
               溶液100gあたりの割合（％）の次は、「小さすぎて測れない粒をどうやって数えるか？」の謎を解き明かします。

@@ -113,7 +113,7 @@ export const AnalogyModal: React.FC<AnalogyModalProps> = ({
                 </div>
                 <p className="text-[11px] text-slate-600 leading-relaxed">
                   1モルは、小さすぎて測れない粒を<strong>約6000垓個（6.02×10²³個）まとめた1箱（1パック）</strong>のこと。
-                  水分子（H₂O）は1粒が軽いので1箱集めても <strong>18.0g</strong>、食塩（NaCl）は重いので1箱集めると <strong>58.5g</strong> になります。
+                  水分子（H₂O）は1粒が軽いので1パック集めても <strong>18.0g</strong>、食塩（NaCl）は重いので1パック集めると <strong>58.5g</strong> になります。
                 </p>
               </div>
             </div>

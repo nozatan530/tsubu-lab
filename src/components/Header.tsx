@@ -40,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
               つぶラボ
             </div>
             <div className="text-[10px] text-slate-400 font-medium hidden sm:block -mt-1">
-              高校化学基礎：粒と箱で学ぶシミュレーター
+              高校化学基礎：粒とパックで学ぶシミュレーター
             </div>
           </div>
         </button>

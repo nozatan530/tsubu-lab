@@ -29,7 +29,7 @@ const UNITS = [
     id: 'unit2' as UnitId,
     num: '②',
     title: '物質量（モル）',
-    concept: '1パック（6.02×10²³個）の箱と10個の小分け',
+    concept: '1パック（6.02×10²³個）と10個の小分け',
     tagline: 'ミカン箱とスイカ箱！物質によって1パックの重さが違う',
     color: 'from-amber-500 to-yellow-500',
     borderColor: 'border-amber-200',
