@@ -3,7 +3,7 @@ import { calculateMassPercent } from '../utils/chemistry';
 import {
   BeakerState,
   BEAKER_INITIAL,
-  BEAKER_MAX_SOLUTE_G,
+  beakerRoom,
   beakerAddSolute,
   beakerAddWater,
   beakerMerge,
@@ -89,6 +89,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
 
   // Operations
   const state: BeakerState = { soluteG, waterG, secondBeaker };
+  const room = beakerRoom(state);
 
   const handleAddSolute = (amount: number) => {
     if (readOnly) return;
@@ -315,7 +316,9 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
         <div className="bg-slate-100/80 p-3 sm:p-4 rounded-xl border border-slate-200 flex flex-col gap-2.5">
           <div className="text-xs font-semibold text-slate-700 flex items-center justify-between">
             <span>操作パネル</span>
-            <span className="text-[11px] font-normal text-slate-500">ボタンをタップして調整</span>
+            <span className={`text-[11px] font-normal ${room.waterG <= 0 ? 'text-rose-600 font-semibold' : 'text-slate-500'}`}>
+              {room.waterG <= 0 ? 'ビーカーがいっぱい（A・B 合わせて 300g まで）' : 'ボタンをタップして調整'}
+            </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -326,7 +329,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                 <button
                   type="button"
                   onClick={() => handleAddSolute(1)}
-                  disabled={soluteG >= BEAKER_MAX_SOLUTE_G}
+                  disabled={room.soluteG <= 0}
                   className="flex-1 py-2 text-xs font-bold text-orange-800 bg-orange-100 hover:bg-orange-200 active:bg-orange-300 rounded-lg transition-colors border border-orange-300/80 disabled:opacity-50"
                 >
                   +1g
@@ -334,7 +337,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                 <button
                   type="button"
                   onClick={() => handleAddSolute(5)}
-                  disabled={soluteG >= BEAKER_MAX_SOLUTE_G}
+                  disabled={room.soluteG <= 0}
                   className="flex-1 py-2 text-xs font-bold text-orange-900 bg-orange-200 hover:bg-orange-300 active:bg-orange-400 rounded-lg transition-colors border border-orange-300 disabled:opacity-50"
                 >
                   +5g
@@ -349,7 +352,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                 <button
                   type="button"
                   onClick={() => handleAddWater(10)}
-                  disabled={calcA.solutionG >= 300}
+                  disabled={room.waterG <= 0}
                   className="flex-1 py-2 text-xs font-bold text-sky-800 bg-sky-100 hover:bg-sky-200 active:bg-sky-300 rounded-lg transition-colors border border-sky-300/80 disabled:opacity-50"
                 >
                   +10g
@@ -357,7 +360,7 @@ export const ParticleBeaker: React.FC<ParticleBeakerProps> = ({
                 <button
                   type="button"
                   onClick={() => handleAddWater(50)}
-                  disabled={calcA.solutionG >= 300}
+                  disabled={room.waterG <= 0}
                   className="flex-1 py-2 text-xs font-bold text-sky-900 bg-sky-200 hover:bg-sky-300 active:bg-sky-400 rounded-lg transition-colors border border-sky-300 disabled:opacity-50"
                 >
                   +50g

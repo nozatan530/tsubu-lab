@@ -3,7 +3,9 @@ import { SUBSTANCES } from '../data/cards';
 import { calculateMolarConcentration, calculateSolutionMass } from '../utils/chemistry';
 import {
   FlaskState,
-  FLASK_MAX_PACKS,
+  FLASK_CAPACITY_ML,
+  flaskMaxPacks,
+  flaskVolumeML,
   flaskAddGrams,
   flaskAlignToMark,
   flaskChangePacks,
@@ -27,7 +29,7 @@ interface MolarFlaskLabProps {
 }
 
 // 容器の最大目盛りと、標線合わせができる目盛り
-const FLASK_MAX_ML = 1200;
+const FLASK_MAX_ML = FLASK_CAPACITY_ML;
 const FLASK_MARKS_ML = [100, 200, 500, 1000];
 
 export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
@@ -270,7 +272,9 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
         <div className="bg-slate-100/80 p-3 sm:p-4 rounded-xl border border-slate-200 flex flex-col gap-3">
           <div className="text-xs font-semibold text-slate-700 flex items-center justify-between">
             <span>操作パネル</span>
-            <span className="text-[11px] font-normal text-slate-500">パック・水の量・標線合わせ</span>
+            <span className={`text-[11px] font-normal ${flaskVolumeML(state) >= FLASK_CAPACITY_ML - 1e-9 ? 'text-rose-600 font-semibold' : 'text-slate-500'}`}>
+              {flaskVolumeML(state) >= FLASK_CAPACITY_ML - 1e-9 ? `容器がいっぱい（${FLASK_CAPACITY_ML}mL まで）` : 'パック・水の量・標線合わせ'}
+            </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
@@ -297,7 +301,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handlePacksChange(0.1)}
-                  disabled={packs >= FLASK_MAX_PACKS}
+                  disabled={packs >= flaskMaxPacks(state) - 1e-9}
                   className="py-1.5 text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-300 disabled:opacity-40 transition-colors"
                 >
                   +0.1
@@ -305,7 +309,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handlePacksChange(1)}
-                  disabled={packs >= FLASK_MAX_PACKS}
+                  disabled={packs >= flaskMaxPacks(state) - 1e-9}
                   className="py-1.5 text-xs font-bold text-amber-950 bg-amber-200 hover:bg-amber-300 rounded-lg border border-amber-400 disabled:opacity-40 transition-colors"
                 >
                   +1
@@ -320,7 +324,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handleWaterChange(10)}
-                  disabled={calc.solutionVolumeML >= 1200}
+                  disabled={flaskVolumeML(state) >= FLASK_CAPACITY_ML - 1e-9}
                   className="flex-1 py-1.5 text-xs font-bold text-sky-900 bg-sky-100 hover:bg-sky-200 rounded-lg border border-sky-300 disabled:opacity-40 transition-colors"
                 >
                   +10mL
@@ -328,7 +332,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
                 <button
                   type="button"
                   onClick={() => handleWaterChange(100)}
-                  disabled={calc.solutionVolumeML >= 1200}
+                  disabled={flaskVolumeML(state) >= FLASK_CAPACITY_ML - 1e-9}
                   className="flex-1 py-1.5 text-xs font-bold text-sky-950 bg-sky-200 hover:bg-sky-300 rounded-lg border border-sky-400 disabled:opacity-40 transition-colors"
                 >
                   +100mL
@@ -423,7 +427,7 @@ export const MolarFlaskLab: React.FC<MolarFlaskLabProps> = ({
               </div>
               <button
                 type="submit"
-                disabled={!inputGrams || packs >= FLASK_MAX_PACKS}
+                disabled={!inputGrams || packs >= flaskMaxPacks(state) - 1e-9}
                 className="px-3 py-1.5 text-xs font-bold text-amber-950 bg-amber-200 hover:bg-amber-300 rounded-lg border border-amber-400 disabled:opacity-40 transition-colors"
               >
                 加える

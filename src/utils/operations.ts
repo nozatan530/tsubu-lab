@@ -15,18 +15,33 @@ export interface BeakerState {
   secondBeaker?: { soluteG: number; waterG: number };
 }
 
+// ビーカー1個に入る量（目盛りの最大）と、食塩の上限（●は最大50個まで描く）。
+// AとBに分けても、合計がこの量を超えないようにする（混ぜたときに必ず1個のビーカーに収まる）
+export const BEAKER_CAPACITY_G = 300;
 export const BEAKER_MAX_SOLUTE_G = 50;
-export const BEAKER_MAX_WATER_G = 260;
 export const BEAKER_INITIAL: BeakerState = { soluteG: 10, waterG: 90, secondBeaker: undefined };
+
+const beakerTotalSolute = (s: BeakerState) => s.soluteG + (s.secondBeaker?.soluteG ?? 0);
+const beakerTotalSolution = (s: BeakerState) =>
+  s.soluteG + s.waterG + (s.secondBeaker ? s.secondBeaker.soluteG + s.secondBeaker.waterG : 0);
+
+// あと何g 足せるか（AとBの合計で考える）
+export const beakerRoom = (s: BeakerState) => {
+  const solutionRoom = Math.max(0, BEAKER_CAPACITY_G - beakerTotalSolution(s));
+  return {
+    soluteG: Math.max(0, Math.min(BEAKER_MAX_SOLUTE_G - beakerTotalSolute(s), solutionRoom)),
+    waterG: solutionRoom,
+  };
+};
 
 export const beakerAddSolute = (s: BeakerState, amount: number): BeakerState => ({
   ...s,
-  soluteG: Math.min(BEAKER_MAX_SOLUTE_G, s.soluteG + amount),
+  soluteG: s.soluteG + Math.min(amount, beakerRoom(s).soluteG),
 });
 
 export const beakerAddWater = (s: BeakerState, amount: number): BeakerState => ({
   ...s,
-  waterG: Math.min(BEAKER_MAX_WATER_G, s.waterG + amount),
+  waterG: s.waterG + Math.min(amount, beakerRoom(s).waterG),
 });
 
 // メインビーカーから fraction の割合をくみ出して、ビーカーBに移す。
@@ -81,28 +96,34 @@ export interface FlaskState {
   waterML: number;
 }
 
+// 容器の最大目盛り（溶液全体の体積の上限）と、パック数の上限
+export const FLASK_CAPACITY_ML = 1200;
 export const FLASK_MAX_PACKS = 5;
-export const FLASK_MAX_WATER_ML = 1200;
 
 const volumePerMol = (substanceId: string) => (SUBSTANCES[substanceId] || SUBSTANCES.NaCl).volumePerMolML;
 
 // 溶液全体の体積（丸めない値）
 export const flaskVolumeML = (s: FlaskState) => s.waterML + s.packs * volumePerMol(s.substanceId);
 
-export const flaskChangePacks = (s: FlaskState, delta: number): FlaskState => ({
-  ...s,
-  packs: Math.max(0, Math.min(FLASK_MAX_PACKS, Math.round((s.packs + delta) * 100) / 100)),
-});
+// あと何 mol 入れられるか（溶液全体が容器の最大目盛りを超えない範囲）
+export const flaskMaxPacks = (s: FlaskState) =>
+  Math.max(0, Math.min(FLASK_MAX_PACKS, (FLASK_CAPACITY_ML - s.waterML) / volumePerMol(s.substanceId)));
 
-export const flaskChangeWater = (s: FlaskState, delta: number): FlaskState => ({
-  ...s,
-  waterML: Math.max(0, Math.min(FLASK_MAX_WATER_ML, s.waterML + delta)),
-});
+export const flaskChangePacks = (s: FlaskState, delta: number): FlaskState => {
+  const next = Math.max(0, Math.round((s.packs + delta) * 100) / 100);
+  return { ...s, packs: delta > 0 ? Math.max(s.packs, Math.min(next, flaskMaxPacks(s))) : next };
+};
+
+export const flaskChangeWater = (s: FlaskState, delta: number): FlaskState => {
+  const maxWater = FLASK_CAPACITY_ML - s.packs * volumePerMol(s.substanceId);
+  const next = Math.max(0, s.waterML + delta);
+  return { ...s, waterML: delta > 0 ? Math.max(s.waterML, Math.min(next, maxWater)) : next };
+};
 
 // 天秤で量った溶質（g）を加える（g → mol の換算）
 export const flaskAddGrams = (s: FlaskState, grams: number): FlaskState =>
   grams > 0
-    ? { ...s, packs: Math.min(FLASK_MAX_PACKS, s.packs + calculateMassToMoles(grams, s.substanceId)) }
+    ? { ...s, packs: Math.max(s.packs, Math.min(flaskMaxPacks(s), s.packs + calculateMassToMoles(grams, s.substanceId))) }
     : s;
 
 // 溶液全体がちょうど targetML になるまで水を合わせる（水 ＋ 溶質の体積 ＝ 標線）

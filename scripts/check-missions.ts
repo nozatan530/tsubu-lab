@@ -19,8 +19,12 @@ import {
   calculateSolutionMass,
 } from '../src/utils/chemistry';
 import {
+  BEAKER_CAPACITY_G,
+  BEAKER_MAX_SOLUTE_G,
   BeakerState,
+  FLASK_CAPACITY_ML,
   FlaskState,
+  beakerRoom,
   PackState,
   beakerAddSolute,
   beakerAddWater,
@@ -149,10 +153,6 @@ const MISTAKES: Record<string, { why: string; steps: Step[] }[]> = {
     { why: '食塩10gに水200g（溶液210g）', steps: [B.solute(5), B.solute(5), ...repeat(4, B.water(50))] },
   ],
   'u1-m5': [{ why: '水を入れすぎる（+100g）', steps: [B.water(50), B.water(50)] }],
-  'u1-m6': [
-    { why: '混ぜる前に食塩を足す', steps: [B.solute(1), B.merge()] },
-    { why: '混ぜる前に水を足す', steps: [B.water(10), B.merge()] },
-  ],
   'u2-m2': [{ why: '3パックにする', steps: [P.change(1), P.change(1)] }],
   'u2-m3': [{ why: 'NaCl で2パックにする', steps: [P.substance('NaCl'), P.grams(117)] }],
   'u2-m4': [{ why: 'CO₂ 1パックのまま（44g）', steps: [] }],
@@ -262,6 +262,41 @@ test('ビーカーを半分・1/4ずつ何度くみ出しても、AとBの濃度
       near(a, b, 1e-9);
       near(a, calculateMassPercent(start.soluteG, start.waterG).percent, 1e-9);
     }
+  }
+});
+
+test('足す・分けるを何度くり返しても、AとBの合計は 300g・食塩は 50g を超えない', () => {
+  let s: BeakerState = { soluteG: 10, waterG: 90 };
+  for (let round = 0; round < 6; round++) {
+    s = beakerSplit(s, 0.5);
+    for (let i = 0; i < 6; i++) s = beakerAddWater(s, 50);
+    for (let i = 0; i < 12; i++) s = beakerAddSolute(s, 5);
+    const b = s.secondBeaker!;
+    assert.ok(s.soluteG + s.waterG + b.soluteG + b.waterG <= BEAKER_CAPACITY_G + 1e-9, '合計が 300g を超えた');
+    assert.ok(s.soluteG + b.soluteG <= BEAKER_MAX_SOLUTE_G + 1e-9, '食塩の合計が 50g を超えた');
+  }
+  const merged = beakerMerge(s);
+  assert.ok(merged.soluteG + merged.waterG <= BEAKER_CAPACITY_G + 1e-9, '混ぜたら 300g を超えた');
+});
+
+test('ビーカーがいっぱい（u1-m6 の最初：5%100g＋20%200g）のときは、食塩も水も足せない', () => {
+  const full: BeakerState = { soluteG: 5, waterG: 95, secondBeaker: { soluteG: 40, waterG: 160 } };
+  assert.deepEqual(beakerRoom(full), { soluteG: 0, waterG: 0 });
+  assert.deepEqual(beakerAddSolute(full, 5), full);
+  assert.deepEqual(beakerAddWater(full, 50), full);
+});
+
+test('容器は、水を入れても溶質を入れても溶液全体が 1200mL を超えない', () => {
+  for (const id of Object.keys(SUBSTANCES)) {
+    let s: FlaskState = { substanceId: id, packs: 0, waterML: 0 };
+    for (let i = 0; i < 15; i++) s = flaskChangeWater(s, 100);
+    for (let i = 0; i < 8; i++) s = flaskChangePacks(s, 1);
+    s = flaskAddGrams(s, 500);
+    assert.ok(flaskVolumeML(s) <= FLASK_CAPACITY_ML + 1e-9, `${id}: ${flaskVolumeML(s)}mL`);
+    s = flaskTakeOut(s, 'half');
+    for (let i = 0; i < 8; i++) s = flaskChangePacks(s, 1);
+    for (let i = 0; i < 15; i++) s = flaskChangeWater(s, 100);
+    assert.ok(flaskVolumeML(s) <= FLASK_CAPACITY_ML + 1e-9, `${id}: くみ出し後 ${flaskVolumeML(s)}mL`);
   }
 });
 
