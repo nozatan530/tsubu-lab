@@ -10,6 +10,7 @@
 
 import assert from 'node:assert/strict';
 import { MISSIONS } from '../src/data/missions';
+import { MISSION_GOALS } from '../src/data/missionGoals';
 import { SUBSTANCES } from '../src/data/cards';
 import { Mission } from '../src/types';
 import {
@@ -235,6 +236,34 @@ for (const m of MISSIONS) {
       assert.equal(result.isSuccess, false, `クリアになってしまう: ${result.feedback}`);
     });
   }
+
+  test(`${m.id}: 「つくる目標」の ✓ が判定と一致する（全部 ✓ ⇔ クリア）`, () => {
+    const spec = MISSION_GOALS[m.id];
+    assert.ok(spec, 'src/data/missionGoals.ts に目標を追加してください');
+    if (spec.kind === 'observe') {
+      assert.ok(ALWAYS_SUCCESS[m.id], '観察ミッション（observe）は ALWAYS_SUCCESS にも登録する');
+      return;
+    }
+    const plays = [
+      { name: '最初', ...play(m, []) },
+      { name: '正しい手順', ...play(m, solution || []) },
+      ...(MISTAKES[m.id] || []).map((x) => ({ name: x.why, ...play(m, x.steps) })),
+    ];
+    for (const { name, state, result } of plays) {
+      const allDone: boolean = spec.goals.every((g) => g.done(state));
+      assert.equal(allDone, result.isSuccess, `${name}: 目標の ✓ は ${allDone ? '全部' : '一部だけ'}、判定は ${result.isSuccess ? 'クリア' : '未達成'}`);
+      for (const g of spec.goals) assert.ok(!/undefined|NaN|null/.test(g.current(state)), `「${g.current(state)}」`);
+    }
+  });
+
+  test(`${m.id}: 「つくる目標」に予想の答えを書いていない`, () => {
+    const spec = MISSION_GOALS[m.id];
+    if (!spec || spec.kind === 'observe') return;
+    const correct = m.choices.find((c) => c.isCorrect)!.label;
+    const answer = correct.match(/[\d.]+\s*(?:mol\/L|mol|mL|%|g|L)/)?.[0];
+    if (!answer) return;
+    for (const g of spec.goals) assert.ok(!g.label.includes(answer), `目標「${g.label}」に答え「${answer}」が入っている`);
+  });
 
   test(`${m.id}: 結果の文に undefined や NaN が出ない`, () => {
     const states = [play(m, []), play(m, solution || []), ...(MISTAKES[m.id] || []).map((x) => play(m, x.steps))];
