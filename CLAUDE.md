@@ -45,4 +45,4 @@
 Vite + React 19 + TypeScript + Tailwind CSS v4。アイコンは lucide-react、アニメーションは motion。
 AI Studio Build で試作（通常ルート：AI機能なし）。保存は localStorage のみ、サーバーなしの静的アプリ。
 GitHub リポジトリは `nozatan530/tsubu-lab`。
-公開先：GitHub Pages（https://nozatan530.github.io/tsubu-lab/）。`main` に push（マージ）すると `.github/workflows/deploy-pages.yml` がチェック・ビルドして自動で公開する。`vite.config.ts` は `base: './'`（相対パス）なので、リポジトリ名が変わっても設定し直さなくてよい。
+公開先：https://tsubulab.meetupsensei.com/（GitHub Pages。カスタムドメインは `public/CNAME`）。`main` に push（マージ）すると `.github/workflows/deploy-pages.yml` がチェック・ビルドして自動で公開する。`vite.config.ts` は `base: './'`（相対パス）なので、リポジトリ名が変わっても設定し直さなくてよい。
