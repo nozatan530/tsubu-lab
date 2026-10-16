@@ -147,7 +147,7 @@ export default function App() {
       {/* Footer */}
       <footer className="border-t border-slate-200 py-6 px-4 bg-white text-center text-xs text-slate-500">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>つぶラボ — 高校化学基礎 粒子概念学習プラットフォーム</span>
+          <span>つぶラボ — 高校化学基礎 粒子概念学習プラットフォーム ／ 制作：のざたん ／ <a href="https://meetupsensei.com" className="underline">meetupsensei.com</a> ／ <a href="https://meetupsensei.com/261005-blog/" className="underline">解説記事を読む</a></span>
           <span className="text-[11px] text-slate-400">
             記録はこの端末のブラウザに保存されます（別の端末には引き継がれません）
           </span>
